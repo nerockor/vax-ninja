@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vax Ninja — Registro de Cliente</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/launcher.css">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: left;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        input {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s ease;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.2);
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(46, 204, 113, 0.4);
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #bdc3c7;
+            text-decoration: none;
+            font-weight: 700;
+            transition: color 0.3s;
+        }
+        .back-link:hover {
+            color: white;
+        }
+        .success-msg {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        .success-msg h2 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-container" id="parallax-bg"></div>
+
+    <main id="main-content">
+        <h1 id="page-title">ÚNETE A LA RED</h1>
+        
+        <div class="form-container" id="reg-form-container">
+            <form id="registration-form">
+                <div class="form-group">
+                    <label for="name">Nombre Completo / Contacto</label>
+                    <input type="text" id="name" name="name" placeholder="Ej: Dr. Juan Pérez" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="dni">DNI</label>
+                    <input type="text" id="dni" name="dni" placeholder="Número de documento" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="matricula">Número de Matrícula</label>
+                    <input type="text" id="matricula" name="matricula" placeholder="M.P. / M.N." required>
+                </div>
+
+                <div class="form-group">
+                    <label for="razon_social">Razón Social</label>
+                    <input type="text" id="razon_social" name="razon_social" placeholder="Nombre de la veterinaria" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email de contacto (opcional)</label>
+                    <input type="email" id="email" name="email" placeholder="email@ejemplo.com">
+                </div>
+
+                <button type="submit" class="submit-btn" id="submit-btn">ENVIAR DATOS ✨</button>
+            </form>
+
+            <a href="index.html" class="back-link">← Volver al portal</a>
+        </div>
+
+        <div class="success-msg" id="success-message">
+            <h2>¡RECIBIDO! 🐾</h2>
+            <p>Tus datos han sido registrados exitosamente. Nos pondremos en contacto contigo pronto.</p>
+            <a href="index.html" class="submit-btn" style="display:inline-block; max-width: 300px; margin-top:30px; text-decoration:none;">VOLVER AL PORTAL</a>
+        </div>
+    </main>
+
+    <script>
+        // Parallax background effect
+        const bg = document.getElementById('parallax-bg');
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 40;
+            const y = (e.clientY / window.innerHeight - 0.5) * 40;
+            bg.style.transform = `translate(calc(-50% - ${x}px), calc(-50% - ${y}px))`;
+        });
+
+        // Form Submission
+        const form = document.getElementById('registration-form');
+        const formContainer = document.getElementById('reg-form-container');
+        const successMsg = document.getElementById('success-message');
+        const title = document.getElementById('page-title');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            btn.textContent = 'Enviando...';
+            btn.disabled = true;
+
+            const formData = {
+                name: form.name.value,
+                dni: form.dni.value,
+                matricula: form.matricula.value,
+                razon_social: form.razon_social.value,
+                email: form.email.value || ""
+            };
+
+            try {
+                const response = await fetch('http://localhost:9091/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    localStorage.setItem('vaxninja_is_survey', 'true');
+                    localStorage.setItem('vaxninja_player', formData.razon_social);
+                    formContainer.style.display = 'none';
+                    title.style.display = 'none';
+                    successMsg.style.display = 'block';
+                } else {
+                    alert('Error al enviar los datos. Por favor intenta de nuevo.');
+                    btn.textContent = 'ENVIAR DATOS ✨';
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo conectar con el servidor.');
+                btn.textContent = 'ENVIAR DATOS ✨';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

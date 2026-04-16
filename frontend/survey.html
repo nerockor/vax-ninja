@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFV — Encuesta de Cliente</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/launcher.css">
+    <style>
+        .survey-container {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+            min-height: 500px;
+        }
+
+        .step {
+            display: none;
+            animation: slideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 100%;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(46, 204, 113, 0.3);
+        }
+
+        .options-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .option-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px 20px;
+            width: calc(33% - 20px);
+            min-width: 200px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+            position: relative;
+        }
+
+        .option-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .option-card.selected {
+            border-color: var(--primary);
+            background: rgba(46, 204, 113, 0.15);
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(46, 204, 113, 0.4);
+        }
+
+        .option-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: var(--primary);
+            font-size: 24px;
+            font-weight: bold;
+            animation: popIn 0.3s ease;
+        }
+
+        .option-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .option-text {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .next-btn {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .next-btn.ready {
+            opacity: 1;
+            pointer-events: auto;
+            animation: pulse 2s infinite;
+        }
+
+        .next-btn.ready:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(46, 204, 113, 0.4);
+        }
+
+        /* Satisfaction Slider Styles */
+        .slider-container {
+            margin: 50px auto;
+            width: 80%;
+            position: relative;
+        }
+
+        .satisfaction-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+        }
+
+        .satisfaction-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.6);
+            transition: transform 0.2s;
+        }
+
+        .satisfaction-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .emoji-display {
+            font-size: 80px;
+            margin-top: 20px;
+            animation: popIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+            }
+
+            80% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(46, 204, 113, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+            }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-bottom: 40px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 20%;
+            transition: width 0.5s ease;
+        }
+
+        .success-step {
+            display: inline-block;
+        }
+
+        /* Sub-options Styles */
+        .sub-options-container {
+            display: none;
+            width: 100%;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .sub-options-container.active {
+            display: block;
+        }
+
+        .sub-options-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .sub-option-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 15px;
+            width: calc(25% - 15px);
+            min-width: 120px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .sub-option-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .sub-option-card.selected {
+            border-color: var(--primary);
+            background: rgba(46, 204, 113, 0.1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Autocomplete Styles for Step 0 */
+        .autocomplete-wrapper {
+            position: relative;
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        .input-text {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.5rem;
+            font-family: 'Outfit', sans-serif;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border-radius: 15px;
+            outline: none;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        .input-text:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .suggestions-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-radius: 10px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-weight: 600;
+            transition: all 0.3s;
+            filter: blur(5px);
+            user-select: none;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item:hover {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--primary);
+            filter: blur(0);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-container" id="parallax-bg"></div>
+
+    <main id="main-content">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="assets/sprites/logo-nuevo.png" alt="Sponsor Logo" style="max-height: 80px; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));">
+        </div>
+        <h1 style="font-size: 3rem; margin-bottom: 20px;">Tu opinión importa 🌟</h1>
+
+        <div class="survey-container">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 16%;" id="progress"></div>
+            </div>
+
+            <!-- STEP 0: Identificacion -->
+            <div class="step active" id="step-0">
+                <h2>Para comenzar, ¿Cual es tu Razón Social?</h2>
+                <div class="autocomplete-wrapper" style="margin-bottom: 40px;">
+                    <input type="text" id="razon-input" class="input-text"
+                        placeholder="Escribe el nombre de tu empresa o veterinaria..." autocomplete="off">
+                    <div id="suggestions" class="suggestions-list"></div>
+                </div>
+                <p style="color: #bdc3c7; font-size: 0.9rem; margin-bottom: 30px;">Selecciona tu nombre de la lista para
+                    continuar.</p>
+                <button class="next-btn" id="btn-step-0" onclick="nextStep(0)">COMENZAR ➔</button>
+            </div>
+
+            <!-- STEP 1: Comunicacion -->
+            <div class="step" id="step-1">
+                <h2>¿Qué comunicación sueles recibir de DFV?</h2>
+                <div class="options-grid" data-multiple="true" data-field="comunicacion">
+                    <div class="option-card" data-val="Email">
+                        <div class="option-icon">📧</div>
+                        <div class="option-text">Email</div>
+                    </div>
+                    <div class="option-card" data-val="Boletin">
+                        <div class="option-icon">📄</div>
+                        <div class="option-text">Boletín Impreso</div>
+                    </div>
+                    <div class="option-card" data-val="Video">
+                        <div class="option-icon">🎬</div>
+                        <div class="option-text">Video</div>
+                    </div>
+                    <div class="option-card" data-val="Whatsapp">
+                        <div class="option-icon">💬</div>
+                        <div class="option-text">WhatsApp</div>
+                    </div>
+                </div>
+                <button class="next-btn" onclick="nextStep(1)">CONTINUAR ➔</button>
+            </div>
+
+            <!-- STEP 2: Funcionalidad -->
+            <div class="step" id="step-2">
+                <h2>¿Te parece funcional recibir nuestra comunicación?</h2>
+                <div class="options-grid" data-multiple="true" data-field="funcionalidad">
+                    <div class="option-card" data-val="Si">
+                        <div class="option-icon">👍</div>
+                        <div class="option-text">Sí, me gustan, QUIERO MÁS OFERTAS!</div>
+                    </div>
+                    <div class="option-card" data-val="Mas o menos">
+                        <div class="option-icon">🤔</div>
+                        <div class="option-text">Más o menos</div>
+                    </div>
+                    <div class="option-card special-reject" data-val="No">
+                        <div class="option-icon">🚫</div>
+                        <div class="option-text">YA NO AGUANTO MÁS, No quiero recibir ofertas de ningún tipo</div>
+                    </div>
+                </div>
+
+                <!-- Sub-options for SI -->
+                <div class="sub-options-container" id="sub-si">
+                    <p style="margin-bottom: 15px; font-weight: 700; color: #bdc3c7;">¿Cuál o cuáles te gustan más? 🤩
+                    </p>
+                    <div class="sub-options-grid" data-field="sub-si">
+                        <div class="sub-option-card" data-val="Email">📧 Email</div>
+                        <div class="sub-option-card" data-val="Boletin">📄 Boletín</div>
+                        <div class="sub-option-card" data-val="Video">🎬 Video</div>
+                        <div class="sub-option-card" data-val="Whatsapp">💬 WhatsApp</div>
+                    </div>
+                </div>
+
+                <!-- Sub-options for NO -->
+                <div class="sub-options-container" id="sub-no">
+                    <p style="margin-bottom: 15px; font-weight: 700; color: #bdc3c7;">¿De cuáles específicamente NO
+                        quieres recibir? 🙅‍♂️</p>
+                    <div class="sub-options-grid" data-field="sub-no">
+                        <div class="sub-option-card" data-val="Email">📧 Email</div>
+                        <div class="sub-option-card" data-val="Boletin">📄 Boletín</div>
+                        <div class="sub-option-card" data-val="Video">🎬 Video</div>
+                        <div class="sub-option-card" data-val="Whatsapp">💬 WhatsApp</div>
+                    </div>
+                </div>
+
+                <button class="next-btn" onclick="nextStep(2)">CONTINUAR ➔</button>
+            </div>
+
+            <!-- STEP 3: Obsequios -->
+            <div class="step" id="step-3">
+                <h2>¿Qué obsequios te gustaría ver en nuestras OFERTAS?</h2>
+                <div class="options-grid" data-multiple="true" data-field="obsequios">
+                    <div class="option-card" data-val="TV">
+                        <div class="option-icon">📺</div>
+                        <div class="option-text">TV</div>
+                    </div>
+                    <div class="option-card" data-val="Viajes">
+                        <div class="option-icon">✈️</div>
+                        <div class="option-text">Viajes</div>
+                    </div>
+                    <div class="option-card" data-val="Vinos">
+                        <div class="option-icon">🍷</div>
+                        <div class="option-text">Vinos</div>
+                    </div>
+                    <div class="option-card" data-val="Chocolates">
+                        <div class="option-icon">🍫</div>
+                        <div class="option-text">Chocolates</div>
+                    </div>
+                    <div class="option-card" data-val="Restaurantes">
+                        <div class="option-icon">🍽️</div>
+                        <div class="option-text">Restaurantes</div>
+                    </div>
+                    <div class="option-card" data-val="Otro">
+                        <div class="option-icon">🎁</div>
+                        <div class="option-text">Otro...</div>
+                    </div>
+                </div>
+
+                <div id="other-gift-container" style="display:none; margin-bottom: 40px; animation: fadeIn 0.4s ease;">
+                    <p style="margin-bottom: 15px; font-weight: 700; color: #bdc3c7;">¿Qué otro obsequio te gustaría? 🎁</p>
+                    <input type="text" id="other-gift-input" class="input-text" placeholder="Escribe tu preferencia aquí..." style="width: 80%;">
+                </div>
+
+                <button class="next-btn" onclick="nextStep(3)">CONTINUAR ➔</button>
+            </div>
+
+            <!-- STEP 4: Pedidos -->
+            <div class="step" id="step-4">
+                <h2>¿Por dónde haces los pedidos?</h2>
+                <div class="options-grid" data-multiple="true" data-field="pedidos">
+                    <div class="option-card" data-val="Vendedor">
+                        <div class="option-icon">👨‍💼</div>
+                        <div class="option-text">Vendedor</div>
+                    </div>
+                    <div class="option-card" data-val="App">
+                        <div class="option-icon">📱</div>
+                        <div class="option-text">App / Web</div>
+                    </div>
+                    <div class="option-card" data-val="Telefono">
+                        <div class="option-icon">📞</div>
+                        <div class="option-text">Teléfono</div>
+                    </div>
+                </div>
+                <button class="next-btn" onclick="nextStep(4)">CONTINUAR ➔</button>
+            </div>
+
+            <!-- STEP 5: Satisfaccion -->
+            <div class="step" id="step-5">
+                <h2>Por último, ¿cuál es tu nivel de satisfacción general?</h2>
+                <div class="slider-container">
+                    <input type="range" min="1" max="5" value="3" class="satisfaction-slider" id="satisfaction" />
+                    <div class="emoji-display" id="emoji-display">😐</div>
+                </div>
+                <button class="next-btn ready" id="final-submit" onclick="submitSurvey()">ENVIAR ENCUESTA ✨</button>
+            </div>
+
+            <!-- Success -->
+            <div class="success-step" id="step-6" style="display:none;">
+                <div class="success-icon" style="font-size: 80px; margin-bottom:20px;">🐾</div>
+                <h2>¡Gracias por jugar con nosotros!</h2>
+                <p style="font-size: 1.2rem; color: #bdc3c7; margin-bottom: 30px;">Tus respuestas nos ayudan a mejorar
+                    día a día.</p>
+                <div style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
+                    <button class="next-btn ready" onclick="goToGame()" style="background: linear-gradient(135deg, #f1c40f, #e67e22); width: 100%; max-width: 450px;">
+                        ¿QUIERES PROBAR TUS HABILIDADES NINJA? ⚔️
+                    </button>
+                    <a href="index.html" class="next-btn ready" style="text-decoration: none; display: inline-block; background: rgba(255,255,255,0.1); font-size: 1rem; padding: 10px 30px;">
+                        VOLVER AL PORTAL
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Parallax background
+        const bg = document.getElementById('parallax-bg');
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 40;
+            const y = (e.clientY / window.innerHeight - 0.5) * 40;
+            bg.style.transform = `translate(calc(-50% - ${x}px), calc(-50% - ${y}px))`;
+        });
+
+        // Survey State
+        const payload = {
+            razon_social: "",
+            comunicacion: [],
+            funcionalidad: [],
+            funcionalidad_detalle: "",
+            obsequios: [],
+            pedidos: [],
+            satisfaccion: 3
+        };
+
+        const subChoices = {
+            'Si': [],
+            'No': []
+        };
+
+        // Handle Card Selections
+        document.querySelectorAll('.options-grid').forEach(grid => {
+            const isMultiple = grid.dataset.multiple === "true";
+            const field = grid.dataset.field;
+
+            grid.querySelectorAll('.option-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const val = card.dataset.val;
+
+                    // Logic for 'No quiero recibir...'
+                    if (card.classList.contains('special-reject')) {
+                        grid.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                        payload[field] = [val];
+
+                        // Show/Hide sub-selectors
+                        document.getElementById('sub-si').classList.remove('active');
+                        document.getElementById('sub-no').classList.add('active');
+                    } else {
+                        // If they click normal option, untoggle the reject option
+                        const reject = grid.querySelector('.special-reject');
+                        if (reject) reject.classList.remove('selected');
+
+                        if (isMultiple) {
+                            card.classList.toggle('selected');
+                        } else {
+                            grid.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+                            card.classList.add('selected');
+                        }
+
+                        // Specific logic for Q2 triggers
+                        if (field === 'funcionalidad') {
+                            if (val === 'Si') {
+                                document.getElementById('sub-si').classList.toggle('active', card.classList.contains('selected'));
+                            }
+                            // If "Mas o menos" is picked, we don't show sub-selectors unless Si/No also picked
+                            if (!grid.querySelector('.option-card[data-val="Si"]').classList.contains('selected')) {
+                                document.getElementById('sub-si').classList.remove('active');
+                            }
+                            if (!grid.querySelector('.special-reject').classList.contains('selected')) {
+                                document.getElementById('sub-no').classList.remove('active');
+                            }
+                        }
+
+                        // Collect selected
+                        const selected = Array.from(grid.querySelectorAll('.option-card.selected')).map(c => c.dataset.val);
+                        payload[field] = selected;
+
+                        // Show/Hide "Other Gift" input
+                        if (field === 'obsequios') {
+                            const isOtherSelected = selected.includes('Otro');
+                            document.getElementById('other-gift-container').style.display = isOtherSelected ? 'block' : 'none';
+                        }
+                    }
+
+                    updateNextButton(grid, field);
+                });
+            });
+        });
+
+        // Handle Sub-option Selections
+        document.querySelectorAll('.sub-option-card').forEach(sub => {
+            sub.addEventListener('click', () => {
+                sub.classList.toggle('selected');
+                const grid = sub.parentElement;
+                const field = grid.dataset.field; // sub-si or sub-no
+                const type = field.split('-')[1]; // Si or No
+
+                const selected = Array.from(grid.querySelectorAll('.sub-option-card.selected')).map(s => s.dataset.val);
+                subChoices[type === 'si' ? 'Si' : 'No'] = selected;
+
+                syncFuncDetail();
+            });
+        });
+
+        function syncFuncDetail() {
+            let details = [];
+            if (subChoices['Si'].length > 0) {
+                details.push(`Gusta: ${subChoices['Si'].join(', ')}`);
+            }
+            if (subChoices['No'].length > 0) {
+                details.push(`Rechaza: ${subChoices['No'].join(', ')}`);
+            }
+            payload.funcionalidad_detalle = details.join(' | ');
+        }
+
+        function updateNextButton(grid, field) {
+            const nextBtn = grid.parentElement.querySelector('.next-btn');
+            if (payload[field].length > 0) {
+                nextBtn.classList.add('ready');
+            } else {
+                nextBtn.classList.remove('ready');
+            }
+        }
+
+        // Satisfaction Slider Effect
+        const slider = document.getElementById('satisfaction');
+        const emoji = document.getElementById('emoji-display');
+        const emojis = ['😡', '😟', '😐', '😊', '😍'];
+
+        slider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            payload.satisfaccion = val;
+
+            // Re-trigger animation
+            emoji.style.animation = 'none';
+            emoji.offsetHeight; // trigger reflow
+            emoji.style.animation = 'popIn 0.3s';
+
+            emoji.textContent = emojis[val - 1];
+        });
+
+        function nextStep(current) {
+            document.getElementById(`step-${current}`).classList.remove('active');
+            document.getElementById(`step-${current + 1}`).classList.add('active');
+            // Assuming 6 steps total (0 to 5)
+            document.getElementById('progress').style.width = `${((current + 2) / 6) * 100}%`;
+
+            // Show success properly handled
+            if (current === 5) {
+                document.getElementById('step-5').classList.remove('active');
+                document.getElementById('step-6').style.display = 'block';
+            }
+        }
+
+        // ================= Autocomplete Logic ================= 
+        const inputStr = document.getElementById('razon-input');
+        const suggList = document.getElementById('suggestions');
+        const btn0 = document.getElementById('btn-step-0');
+        let debounceTimer;
+
+        inputStr.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            payload.razon_social = ""; // reset if typing
+            btn0.classList.remove('ready');
+
+            const q = e.target.value;
+            if (q.length < 3) {
+                suggList.style.display = 'none';
+                return;
+            }
+
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const res = await fetch(`http://localhost:9091/api/clients/search?q=${encodeURIComponent(q)}`);
+                    const json = await res.json();
+
+                    if (json.data && json.data.length > 0) {
+                        suggList.innerHTML = '';
+                        const isUniqueMatch = json.data.length === 1;
+
+                        json.data.forEach(clientName => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.textContent = clientName;
+
+                            // Dynamic blur: less blur as the query gets longer relative to the name
+                            const queryLen = q.trim().length;
+                            const nameLen = clientName.length;
+                            const matchRatio = queryLen / nameLen;
+
+                            let blurVal = 6; // Default fuzzy
+                            if (matchRatio > 0.4) blurVal = 3;
+                            if (matchRatio > 0.7 || isUniqueMatch) blurVal = 0; // Very close OR single result -> make it sharp!
+
+                            div.style.filter = `blur(${blurVal}px)`;
+
+                            div.onclick = () => {
+                                inputStr.value = clientName;
+                                payload.razon_social = clientName;
+                                suggList.style.display = 'none';
+                                btn0.classList.add('ready'); // Ready to go!
+                            };
+                            suggList.appendChild(div);
+                        });
+                        suggList.style.display = 'block';
+                    } else {
+                        suggList.style.display = 'none';
+                    }
+                } catch (e) {
+                    console.error("Autocomplete error:", e);
+                }
+            }, 300); // 300ms debounce
+        });
+
+        // Hide on outside click
+        document.addEventListener('click', (e) => {
+            if (e.target !== inputStr) suggList.style.display = 'none';
+        });
+
+        // ================= API Submission ================= 
+        async function submitSurvey() {
+            const btn = document.getElementById('final-submit');
+            btn.textContent = 'Enviando...';
+            btn.classList.remove('ready');
+
+            // Handle "Other" gift text
+            let finalObsequios = [...payload.obsequios];
+            const otherIdx = finalObsequios.indexOf('Otro');
+            if (otherIdx !== -1) {
+                const customGift = document.getElementById('other-gift-input').value.trim();
+                if (customGift) {
+                    finalObsequios[otherIdx] = customGift;
+                } else {
+                    // If empty, just remove it or keep it as "Otro"
+                    finalObsequios.splice(otherIdx, 1);
+                }
+            }
+
+            // Format array to string
+            const finalData = {
+                razon_social: payload.razon_social,
+                comunicacion: payload.comunicacion.join(', '),
+                funcionalidad: payload.funcionalidad.join(', '),
+                funcionalidad_detalle: payload.funcionalidad_detalle,
+                obsequios: finalObsequios.join(', '),
+                pedidos: payload.pedidos.join(', '),
+                satisfaccion: payload.satisfaccion
+            };
+
+            try {
+                const response = await fetch('http://localhost:9091/api/survey', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(finalData)
+                });
+
+                if (response.ok) {
+                    localStorage.setItem('vaxninja_is_survey', 'true');
+                    nextStep(5);
+                } else {
+                    alert('Error al enviar la encuesta.');
+                    btn.textContent = 'ENVIAR ENCUESTA ✨';
+                    btn.classList.add('ready');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo conectar con el servidor.');
+                btn.textContent = 'ENVIAR ENCUESTA ✨';
+                btn.classList.add('ready');
+            }
+        }
+        function goToGame() {
+            if (payload.razon_social) {
+                localStorage.setItem('vaxninja_player', payload.razon_social);
+                window.location.href = `game.html?name=${encodeURIComponent(payload.razon_social)}`;
+            } else {
+                window.location.href = 'game.html';
+            }
+        }
+    </script>
+</body>
+
+</html>

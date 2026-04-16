@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - vaxninja-data:/data
+    environment:
+      - DB_PATH=/data/vaxninja.db
+    restart: unless-stopped
+
+volumes:
+  vaxninja-data:

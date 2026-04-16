@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Vax Ninja Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --surface: #16213e;
+            --primary: #2ecc71;
+            --text: #ecf0f1;
+            --text-dim: #bdc3c7;
+            --border: #2c3e50;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            background-color: var(--surface);
+            padding: 20px 0;
+            text-align: center;
+            border-bottom: 2px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 32px;
+            font-weight: 900;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin-top: 40px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        button.btn {
+            background-color: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button.btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        th, td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: #0f172a;
+            color: var(--text-dim);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: #1e293b;
+        }
+
+        .score-col {
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 18px;
+            margin-top: 40px;
+        }
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            background-color: var(--surface);
+            color: var(--text-dim);
+            border: 2px solid var(--border);
+            padding: 10px 20px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Survey Stats Styling */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background-color: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
+        }
+
+        .stat-card h3 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 18px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-row {
+            margin-bottom: 15px;
+        }
+
+        .stat-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .stat-bar-bg {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .stat-bar-fill {
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: 4px;
+        }
+        
+        .stat-bar-fill.negative {
+            background-color: #e74c3c;
+        }
+        
+        .hero-stat {
+            font-size: 36px;
+            font-weight: 900;
+            color: #fff;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>✂️ VAX NINJA | ADMIN DASHBOARD</h1>
+    </header>
+
+    <div class="container">
+        <div class="controls">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('jugadores')">Jugadores</button>
+                <button class="tab-btn" onclick="switchTab('encuestas')">Encuestas</button>
+            </div>
+            <button class="btn" onclick="loadCurrentTab()">🔄 Actualizar</button>
+        </div>
+
+        <!-- JUGADORES TAB -->
+        <div id="tab-jugadores" class="tab-content active">
+            <div id="status-jugadores" class="loading">Cargando datos...</div>
+            <table id="dataTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Nombre Público</th>
+                    <th>Nombre Real (Empresa)</th>
+                    <th>IP Origen</th>
+                    <th>Mayor Puntaje</th>
+                    <th>Sesiones</th>
+                    <th>Registro</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Data injected here -->
+            </tbody>
+        </table>
+        </div>
+
+        <!-- ENCUESTAS TAB -->
+        <div id="tab-encuestas" class="tab-content">
+            <div class="controls" style="margin-top: 10px;">
+                <h3 style="margin:0;">Estadísticas de Encuestas</h3>
+                <a href="http://localhost:9091/api/admin/survey/export" class="btn" style="text-decoration:none;">📊 Descargar CSV</a>
+            </div>
+            <div id="status-encuestas" class="loading">Cargando datos de encuestas...</div>
+            
+            <div class="stats-grid" id="survey-stats" style="display: none;">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentTab = 'jugadores';
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            currentTab = tab;
+            loadCurrentTab();
+        }
+
+        function loadCurrentTab() {
+            if(currentTab === 'jugadores') loadJugadores();
+            else loadEncuestas();
+        }
+
+        async function loadJugadores() {
+            const statusEl = document.getElementById('status-jugadores');
+            const tableEl = document.getElementById('dataTable');
+            const tbody = document.getElementById('tableBody');
+
+            statusEl.style.display = 'block';
+            statusEl.textContent = 'Cargando datos...';
+            tableEl.style.display = 'none';
+
+            try {
+                const response = await fetch('http://localhost:9091/api/admin/data');
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const contentType = response.headers.get("content-type");
+                if (!contentType || contentType.indexOf("application/json") === -1) {
+                    throw new Error("No JSON returned (API apagada?)");
+                }
+                
+                const json = await response.json();
+                const data = json.data || [];
+
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    statusEl.textContent = 'Aún no hay participantes registrados.';
+                    return;
+                }
+
+                data.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${p.player_id}</td>
+                        <td style="font-weight:700; color:#bdc3c7;">${p.real_name || '—'}</td>
+                        <td style="color: #64748b; font-size: 13px;">${p.ip_address || 'N/A'}</td>
+                        <td class="score-col">${p.top_score}</td>
+                        <td>${p.sessions_played}</td>
+                        <td>${p.first_played_date}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                statusEl.style.display = 'none';
+                tableEl.style.display = 'table';
+            } catch (err) {
+                console.error("Fetch error:", err);
+                statusEl.innerHTML = `<span class="error">❌ Error cargando jugadores.</span>`;
+            }
+        }
+
+        async function loadEncuestas() {
+            const statusEl = document.getElementById('status-encuestas');
+            const statsContainer = document.getElementById('survey-stats');
+
+            statusEl.style.display = 'block';
+            statsContainer.style.display = 'none';
+
+            try {
+                const response = await fetch('http://localhost:9091/api/admin/survey/stats');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const json = await response.json();
+                const stats = json.data;
+
+                statusEl.style.display = 'none';
+                statsContainer.style.display = 'grid';
+                
+                if(stats.total_responses === 0) {
+                    statsContainer.innerHTML = `<div class="stat-card" style="grid-column: 1 / -1;"><h3 style="text-align:center;">No hay encuestas aún</h3></div>`;
+                    return;
+                }
+
+                // Helper to render bars
+                const renderBars = (dataObj, total, isNegative = false) => {
+                    return Object.entries(dataObj).sort((a,b) => b[1] - a[1]).map(([key, count]) => {
+                        const pct = Math.round((count / total) * 100) || 0;
+                        return `
+                        <div class="stat-row">
+                            <div class="stat-label"><span>${key}</span> <span>${count} (${pct}%)</span></div>
+                            <div class="stat-bar-bg"><div class="stat-bar-fill ${isNegative ? 'negative' : ''}" style="width: ${pct}%"></div></div>
+                        </div>`;
+                    }).join('');
+                };
+
+                statsContainer.innerHTML = `
+                    <div class="stat-card">
+                        <h3>Resumen General</h3>
+                        <div class="stat-row">
+                            <div class="stat-label">Total Respuestas</div>
+                            <div class="hero-stat">${stats.total_responses}</div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-label">Satisfacción Promedio</div>
+                            <div class="hero-stat">${stats.satisfaccion_promedio} ⭐</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3>1. Canales de Comunicación Actuales</h3>
+                        ${renderBars(stats.comunicacion, stats.total_responses)}
+                    </div>
+
+                    <div class="stat-card">
+                        <h3>2. Funcionalidad / Interés</h3>
+                        ${renderBars(stats.funcionalidad_general, stats.total_responses)}
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3>2a. Canales Aprobados (Sí)</h3>
+                        <p style="font-size: 12px; color: var(--text-dim); margin-bottom:10px;">Sub-selector de los que aceptaron.</p>
+                        ${renderBars(stats.funcionalidad_detalle_gusta, stats.total_responses)}
+                    </div>
+                    
+                    <div class="stat-card" style="border-color: #e74c3c;">
+                        <h3 style="color: #e74c3c;">2b. Canales Rechazados (No)</h3>
+                        <p style="font-size: 12px; color: var(--text-dim); margin-bottom:10px;">Específicamente qué canales no quieren.</p>
+                        ${renderBars(stats.funcionalidad_detalle_rechaza, stats.total_responses, true)}
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3>3. Obsequios Deseados</h3>
+                        ${renderBars(stats.obsequios, stats.total_responses)}
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3>4. Medio de Pedidos</h3>
+                        ${renderBars(stats.pedidos, stats.total_responses)}
+                    </div>
+                `;
+
+            } catch (err) {
+                console.error("Fetch error:", err);
+                statusEl.innerHTML = `<span class="error">❌ Error cargando estadísticas. Asegúrate de que el backend esté con la actualización.</span>`;
+            }
+        }
+
+        // Initial load
+        window.onload = loadCurrentTab;
+    </script>
+
+</body>
+</html>
