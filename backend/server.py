@@ -52,9 +52,13 @@ db = Database()
 class ScoreInput(BaseModel):
     name: str
     score: int
+    is_survey: bool = False
 
 class ParticipantInput(BaseModel):
     name: str
+    email: str = ""
+    phone: str = ""
+    year: str = ""
 
 class ProspectInput(BaseModel):
     name: str
@@ -99,11 +103,12 @@ async def register_participant(data: ParticipantInput, request: Request):
     # First, check if IP is already registered
     existing = db.get_participant_by_ip(client_ip)
     if existing:
-        return {"status": "existing", "name": existing["name"]}
+        # Proceed with upsert even if exists
+        pass
 
     clean_name = data.name.strip()[:15]
     if clean_name:
-        db.insert_participant(clean_name, client_ip)
+        db.insert_participant(clean_name, client_ip, data.email, data.phone, data.year)
     return {"status": "ok", "message": "Participant Registered"}
 
 @app.get("/api/participant/check")
@@ -141,6 +146,11 @@ async def get_admin_data():
     # In a real app, protect this with a token/password
     report = db.get_admin_report()
     return {"status": "ok", "data": report}
+
+@app.get("/api/admin/participants")
+async def get_admin_participants():
+    participants = db.get_all_participants()
+    return {"status": "ok", "data": participants}
 
 @app.post("/api/register")
 async def save_registration(data: ProspectInput):

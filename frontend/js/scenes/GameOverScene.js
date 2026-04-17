@@ -72,7 +72,7 @@ class GameOverScene extends Phaser.Scene {
         const isSurvey = localStorage.getItem('vaxninja_is_survey') === 'true';
         
         try {
-            const response = await fetch('/api/score', {
+            const response = await fetch('./api/score', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
