@@ -60,8 +60,9 @@ class BootScene extends Phaser.Scene {
         this.load.image('game_bg', 'assets/sprites/bg-game.png');
         this.load.image('login_bg', 'assets/sprites/bg-login.png');
         for (let i = 1; i <= 6; i++) {
-            this.load.image(`arma-${i}`, `assets/sprites/arma-${i}.png?v=10`);
+            this.load.image(`arma-${i}`, `assets/sprites/arma-${i}.png?v=17`);
         }
+<<<<<<< Updated upstream
 
         // Boss assets — Sequence: Base (estado inicial, 100% vida)
         this.load.image('jefe-final-idle1', 'assets/sprites/jefe-final-idle1.png?v=15');
@@ -94,6 +95,35 @@ class BootScene extends Phaser.Scene {
         this.load.image('jefe-final-0vida-idle3', 'assets/sprites/jefe-final-0vida-idle3.png?v=15');
 
         this.load.image('bg-boss', 'assets/sprites/bg-gg-boss-opt.jpg?v=10');
+=======
+        
+        // Boss assets — animaciones multi-frame (idle1/2/3 por estado)
+        this.load.image('jefe-final-idle1', 'assets/sprites/jefe-final-idle1.png?v=17');
+        this.load.image('jefe-final-idle2', 'assets/sprites/jefe-final-idle2.png?v=17');
+        this.load.image('jefe-final-idle3', 'assets/sprites/jefe-final-idle3.png?v=17');
+
+        this.load.image('jefe-final-95-vida-idle1', 'assets/sprites/jefe-final-95-vida-idle1.png?v=17');
+        this.load.image('jefe-final-95-vida-idle2', 'assets/sprites/jefe-final-95-vida-idle2.png?v=17');
+        this.load.image('jefe-final-95-vida-idle3', 'assets/sprites/jefe-final-95-vida-idle3.png?v=17');
+
+        this.load.image('jefe-final-70vida-idle1', 'assets/sprites/jefe-final-70vida-idle1.png?v=17');
+        this.load.image('jefe-final-70vida-idle2', 'assets/sprites/jefe-final-70vida-idle2.png?v=17');
+        this.load.image('jefe-final-70vida-idle3', 'assets/sprites/jefe-final-70vida-idle3.png?v=17');
+
+        this.load.image('jefe-final-30vida-idle1', 'assets/sprites/jefe-final-30vida-idle1.png?v=17');
+        this.load.image('jefe-final-30vida-idle2', 'assets/sprites/jefe-final-30vida-idle2.png?v=17');
+        this.load.image('jefe-final-30vida-idle3', 'assets/sprites/jefe-final-30vida-idle3.png?v=17');
+
+        this.load.image('jefe-final-10vida-idle1', 'assets/sprites/jefe-final-10vida-idle1.png?v=17');
+        this.load.image('jefe-final-10vida-idle2', 'assets/sprites/jefe-final-10vida-idle2.png?v=17');
+        this.load.image('jefe-final-10vida-idle3', 'assets/sprites/jefe-final-10vida-idle3.png?v=17');
+
+        this.load.image('jefe-final-0vida-idle1', 'assets/sprites/jefe-final-0vida-idle1.png?v=17');
+        this.load.image('jefe-final-0vida-idle2', 'assets/sprites/jefe-final-0vida-idle2.png?v=17');
+        this.load.image('jefe-final-0vida-idle3', 'assets/sprites/jefe-final-0vida-idle3.png?v=17');
+
+        this.load.image('bg-boss', 'assets/sprites/bg-gg-boss-opt.jpg?v=17');
+>>>>>>> Stashed changes
     }
 
     create() {

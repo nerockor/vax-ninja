@@ -473,9 +473,33 @@ class GameScene extends Phaser.Scene {
             this.bossContainer = this.add.container(width / 2, height / 2).setDepth(40);
 
             // Spawn Boss Sprite inside container
+<<<<<<< Updated upstream
             this.bossSprite = this.add.sprite(0, 0, 'jefe-final-idle1');
             this.bossSprite.setScale(0.1); 
+=======
+            console.log('[GameScene] Jefe Final Spawn. Textura base:', this.textures.exists('jefe-final-idle1'));
+            this.bossSprite = this.add.sprite(0, 0, 'jefe-final-idle1');
+            
+            // Generate idle animations for all damage states
+            const states = ['jefe-final', 'jefe-final-95-vida', 'jefe-final-70vida', 'jefe-final-30vida', 'jefe-final-10vida', 'jefe-final-0vida'];
+            states.forEach(state => {
+                if (!this.anims.exists(`${state}-idle`)) {
+                    console.log(`[GameScene] Creando animación: ${state}-idle`);
+                    this.anims.create({
+                        key: `${state}-idle`,
+                        frames: [{ key: `${state}-idle1` }, { key: `${state}-idle2` }, { key: `${state}-idle3` }],
+                        frameRate: 6,
+                        repeat: -1
+                    });
+                }
+            });
+            this.bossSprite.play('jefe-final-idle');
+            
+            this.bossSprite.setScale(0.1); // Small at first
+            this.bossSprite.setDepth(100); // Ensuring it is on top of things in container
+>>>>>>> Stashed changes
             this.bossContainer.add(this.bossSprite);
+            this.bossContainer.setDepth(500); // Much higher depth for the container itself
 
             // ── 3. BOSS HEALTH BAR ──
             const barWidth = 800;
@@ -685,6 +709,7 @@ hitBoss(weaponSprite) {
         emitting: false
     }).explode();
 
+<<<<<<< Updated upstream
     // Damage logic based on health percentages
     const damageStages = [
         { threshold: 100, anim: 'boss_idle_full', healthPct: 100 },
@@ -705,6 +730,16 @@ hitBoss(weaponSprite) {
     this.updateBossHealthBar(currentState ? currentState.healthPct : 0);
     if (this.bossHealthLabel && currentState) {
         this.bossHealthLabel.setText(`EL JEFE FINAL - SALUD: ${currentState.healthPct}%`);
+=======
+    // Change Boss Animation based on actual filenames on disk
+    const damageStates = [
+        'jefe-final', 'jefe-final-95-vida', 'jefe-final-70vida', 
+        'jefe-final-30vida', 'jefe-final-10vida', 'jefe-final-0vida'
+    ];
+
+    if (this.bossHits < 6) {
+        this.bossSprite.play(damageStates[this.bossHits] + '-idle');
+>>>>>>> Stashed changes
     }
 
     // Check Victory
