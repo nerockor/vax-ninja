@@ -73,6 +73,15 @@ class Database:
         try: self.conn.execute("ALTER TABLE scores ADD COLUMN real_name TEXT")
         except sqlite3.OperationalError: pass
             
+        try: self.conn.execute("ALTER TABLE participants ADD COLUMN email TEXT")
+        except sqlite3.OperationalError: pass
+
+        try: self.conn.execute("ALTER TABLE participants ADD COLUMN phone TEXT")
+        except sqlite3.OperationalError: pass
+
+        try: self.conn.execute("ALTER TABLE participants ADD COLUMN year TEXT")
+        except sqlite3.OperationalError: pass
+
         self.conn.commit()
 
     def insert_score(self, name: str, score: int, is_survey: bool = False):
@@ -118,17 +127,21 @@ class Database:
         )
         return [dict(row) for row in cursor.fetchall()]
 
-    def insert_participant(self, name: str, ip: str = None):
+    def insert_participant(self, name: str, ip: str = None, email: str = "", phone: str = "", year: str = ""):
         today = date.today().isoformat()
         try:
-            self.conn.execute(
-                "INSERT INTO participants (name, first_played_date, ip_address) VALUES (?, ?, ?)",
-                (name, today, ip)
-            )
+            self.conn.execute("""
+                INSERT INTO participants (name, first_played_date, ip_address, email, phone, year)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(name) DO UPDATE SET
+                    email = excluded.email,
+                    phone = excluded.phone,
+                    year = excluded.year,
+                    ip_address = excluded.ip_address
+            """, (name, today, ip, email, phone, year))
             self.conn.commit()
-        except sqlite3.IntegrityError:
-            # Participant name already exists
-            pass
+        except sqlite3.Error as e:
+            print(f"Error inserting participant: {e}")
 
     def get_participant_by_ip(self, ip: str):
         cursor = self.conn.execute(
@@ -137,6 +150,10 @@ class Database:
         )
         row = cursor.fetchone()
         return dict(row) if row else None
+
+    def get_all_participants(self):
+        cursor = self.conn.execute("SELECT * FROM participants ORDER BY created_at DESC")
+        return [dict(row) for row in cursor.fetchall()]
 
     def insert_prospect(self, data: dict):
         self.conn.execute(
@@ -178,19 +195,38 @@ class Database:
         return [dict(row) for row in cursor.fetchall()]
 
     def get_admin_report(self):
-        # Returns all participants with their max score (if any), first played date and IP
+        # Returns all participants from all sources (students, prospects, surveys, and legacy scores)
         cursor = self.conn.execute("""
+            WITH all_users AS (
+                SELECT name, ip_address, created_at FROM participants
+                UNION
+                SELECT razon_social as name, 'Encuesta' as ip_address, created_at FROM survey_responses WHERE razon_social IS NOT NULL AND razon_social != '' AND razon_social != 'Desconocido'
+                UNION
+                SELECT razon_social as name, 'Prospecto' as ip_address, created_at FROM prospects WHERE razon_social IS NOT NULL AND razon_social != ''
+                UNION
+                SELECT COALESCE(real_name, name) as name, 'Directo' as ip_address, date as created_at FROM scores
+            ),
+            user_stats AS (
+                SELECT 
+                    u.name as final_real_name,
+                    MAX(u.ip_address) as final_ip_address,
+                    MIN(u.created_at) as first_played_date,
+                    COALESCE(MAX(s.score), 0) as top_score,
+                    COUNT(s.id) as sessions_played,
+                    MAX(CASE WHEN s.is_survey = 1 THEN s.name ELSE '' END) as alias
+                FROM all_users u
+                LEFT JOIN scores s ON u.name = s.name OR u.name = s.real_name
+                GROUP BY u.name
+            )
             SELECT 
-                p.name as player_id, 
-                p.ip_address,
-                p.first_played_date,
-                COALESCE(MAX(s.score), 0) as top_score,
-                COUNT(s.id) as sessions_played,
-                MAX(s.real_name) as real_name
-            FROM participants p
-            LEFT JOIN scores s ON p.name = s.name OR p.name = s.real_name
-            GROUP BY p.name
-            ORDER BY p.first_played_date DESC, top_score DESC
+                CASE WHEN alias != '' THEN alias ELSE final_real_name END as player_id,
+                final_real_name as real_name,
+                final_ip_address as ip_address,
+                first_played_date,
+                top_score,
+                sessions_played
+            FROM user_stats
+            ORDER BY top_score DESC, first_played_date DESC
         """)
         return [dict(row) for row in cursor.fetchall()]
 

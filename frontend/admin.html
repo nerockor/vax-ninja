@@ -227,8 +227,9 @@
     <div class="container">
         <div class="controls">
             <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('jugadores')">Jugadores</button>
-                <button class="tab-btn" onclick="switchTab('encuestas')">Encuestas</button>
+                <button class="tab-btn active" onclick="switchTab('jugadores')">📈 Ranking (Todos)</button>
+                <button class="tab-btn" onclick="switchTab('estudiantes')">🎓 Estudiantes</button>
+                <button class="tab-btn" onclick="switchTab('encuestas')">📝 Encuestas</button>
             </div>
             <button class="btn" onclick="loadCurrentTab()">🔄 Actualizar</button>
         </div>
@@ -250,7 +251,26 @@
             <tbody id="tableBody">
                 <!-- Data injected here -->
             </tbody>
-        </table>
+            </table>
+        </div>
+
+        <!-- ESTUDIANTES TAB -->
+        <div id="tab-estudiantes" class="tab-content">
+            <div id="status-estudiantes" class="loading">Cargando datos de registro...</div>
+            <table id="estudiantesTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Nombre y Apellido</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                    <th>Año cursando</th>
+                    <th>Registro</th>
+                </tr>
+            </thead>
+            <tbody id="tableEstudiantesBody">
+                <!-- Data injected here -->
+            </tbody>
+            </table>
         </div>
 
         <!-- ENCUESTAS TAB -->
@@ -283,6 +303,7 @@
 
         function loadCurrentTab() {
             if(currentTab === 'jugadores') loadJugadores();
+            else if(currentTab === 'estudiantes') loadEstudiantes();
             else loadEncuestas();
         }
 
@@ -332,6 +353,48 @@
             } catch (err) {
                 console.error("Fetch error:", err);
                 statusEl.innerHTML = `<span class="error">❌ Error cargando jugadores.</span>`;
+            }
+        }
+
+        async function loadEstudiantes() {
+            const statusEl = document.getElementById('status-estudiantes');
+            const tableEl = document.getElementById('estudiantesTable');
+            const tbody = document.getElementById('tableEstudiantesBody');
+
+            statusEl.style.display = 'block';
+            tableEl.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/admin/participants');
+                if (!response.ok) throw new Error('Network error');
+                
+                const json = await response.json();
+                const data = json.data || [];
+
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    statusEl.textContent = 'Aún no hay estudiantes registrados.';
+                    return;
+                }
+
+                data.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-weight:700;">${p.name}</td>
+                        <td style="color:#bdc3c7;">${p.email || '—'}</td>
+                        <td style="color:#bdc3c7;">${p.phone || '—'}</td>
+                        <td class="score-col">${p.year || '—'}</td>
+                        <td>${p.created_at}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                statusEl.style.display = 'none';
+                tableEl.style.display = 'table';
+            } catch (err) {
+                console.error("Fetch error:", err);
+                statusEl.innerHTML = `<span class="error">❌ Error cargando la data de Estudiantes.</span>`;
             }
         }
 

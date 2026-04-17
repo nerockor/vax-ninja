@@ -199,116 +199,162 @@ class MenuScene extends Phaser.Scene {
     //  NEW PLAYER — Name Input Popup
     // ══════════════════════════════════════════════
     showNamePopup(width, height) {
-        const inputEl = document.createElement('input');
-        inputEl.type = 'text';
-        inputEl.id = 'ninja-name-input';
-        inputEl.placeholder = 'Tu nombre ninja…';
-        inputEl.maxLength = 15;
-        inputEl.style.cssText = `
+        const container = document.createElement('div');
+        container.id = 'ninja-form-container';
+        container.style.cssText = `
             position: absolute;
-            left: 50%; top: 47%;
+            left: 50%; top: 50%;
             transform: translate(-50%, -50%);
-            width: 280px; padding: 14px 20px;
+            display: flex; flex-direction: column; align-items: center; gap: 12px;
+            z-index: 999;
+            transition: transform 0.1s ease-out;
+            width: 100%; max-width: 350px;
+        `;
+
+        const inputStyle = `
+            width: 100%; padding: 12px 20px; box-sizing: border-box;
             font-family: 'Outfit', sans-serif;
-            font-size: 24px; font-weight: 800;
+            font-size: 20px; font-weight: 700;
             text-align: center; color: #1a1a2e;
             background: rgba(255,255,255,0.95);
             border: 3px solid #2ecc71;
             border-radius: 12px; outline: none;
-            z-index: 999;
-            box-shadow: 0 0 20px rgba(46,204,113,0.5), 0 0 60px rgba(57,255,20,0.15);
+            box-shadow: 0 0 15px rgba(46,204,113,0.3);
             letter-spacing: 1px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            transition: all 0.3s ease;
         `;
+
+        const createInput = (id, placeholder, type = 'text') => {
+            const input = document.createElement('input');
+            input.type = type;
+            input.id = id;
+            input.placeholder = placeholder;
+            input.style.cssText = inputStyle;
+            
+            input.addEventListener('focus', () => {
+                input.style.boxShadow = '0 0 25px rgba(46,204,113,0.7)';
+                input.style.transform = 'scale(1.02)';
+            });
+            input.addEventListener('blur', () => {
+                input.style.boxShadow = '0 0 15px rgba(46,204,113,0.3)';
+                input.style.transform = 'scale(1)';
+            });
+            return input;
+        };
+
+        const nameInput = createInput('ninja-name-input', 'Tu nombre ninja...');
+        const emailInput = createInput('ninja-email-input', 'Tu email...', 'email');
+        const phoneInput = createInput('ninja-phone-input', 'Tu teléfono...', 'tel');
+        const yearInput = createInput('ninja-year-input', 'Año cursando (opcional)');
 
         const btnEl = document.createElement('button');
         btnEl.id = 'ninja-confirm-btn';
         btnEl.textContent = '¡PARTICIPAR! ✂️';
         btnEl.style.cssText = `
-            position: absolute;
-            left: 50%; top: 58%;
-            transform: translate(-50%, -50%);
-            padding: 16px 48px;
+            margin-top: 10px;
+            padding: 14px 40px;
             font-family: 'Outfit', sans-serif;
-            font-size: 28px; font-weight: 900;
+            font-size: 24px; font-weight: 900;
             color: #fff;
             background: linear-gradient(135deg, #2ecc71, #27ae60);
             border: none; border-radius: 16px;
-            cursor: pointer; z-index: 999;
-            box-shadow: 0 6px 20px rgba(46,204,113,0.4), 0 0 40px rgba(57,255,20,0.1);
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(46,204,113,0.4);
             transition: all 0.25s ease;
             letter-spacing: 2px;
+            width: 100%;
         `;
 
         const errorEl = document.createElement('div');
         errorEl.id = 'ninja-error';
         errorEl.style.cssText = `
-            position: absolute;
-            left: 50%; top: 65%;
-            transform: translateX(-50%);
             font-family: 'Outfit', sans-serif;
-            font-size: 18px; font-weight: 700;
-            color: #e74c3c; z-index: 999;
+            font-size: 16px; font-weight: 700;
+            color: #e74c3c;
             opacity: 0; transition: opacity 0.3s;
             text-shadow: 0 0 10px rgba(231,76,60,0.5);
+            text-align: center;
         `;
+
+        container.appendChild(nameInput);
+        container.appendChild(emailInput);
+        container.appendChild(phoneInput);
+        container.appendChild(yearInput);
+        container.appendChild(btnEl);
+        container.appendChild(errorEl);
 
         const canvas = document.querySelector('canvas');
         const parent = canvas.parentElement;
         parent.style.position = 'relative';
-        parent.appendChild(inputEl);
-        parent.appendChild(btnEl);
-        parent.appendChild(errorEl);
+        parent.appendChild(container);
 
-        setTimeout(() => inputEl.focus(), 300);
-
-        // Glow pulse on input focus
-        inputEl.addEventListener('focus', () => {
-            inputEl.style.boxShadow = '0 0 25px rgba(46,204,113,0.7), 0 0 80px rgba(57,255,20,0.25)';
-        });
-        inputEl.addEventListener('blur', () => {
-            inputEl.style.boxShadow = '0 0 20px rgba(46,204,113,0.5), 0 0 60px rgba(57,255,20,0.15)';
-        });
+        setTimeout(() => nameInput.focus(), 300);
 
         btnEl.addEventListener('mouseenter', () => {
-            btnEl.style.boxShadow = '0 8px 30px rgba(46,204,113,0.6), 0 0 60px rgba(57,255,20,0.3)';
+            btnEl.style.boxShadow = '0 8px 30px rgba(46,204,113,0.6)';
             btnEl.style.background = 'linear-gradient(135deg, #39ff14, #2ecc71)';
+            btnEl.style.transform = 'scale(1.05)';
         });
         btnEl.addEventListener('mouseleave', () => {
-            btnEl.style.boxShadow = '0 6px 20px rgba(46,204,113,0.4), 0 0 40px rgba(57,255,20,0.1)';
+            btnEl.style.boxShadow = '0 6px 20px rgba(46,204,113,0.4)';
             btnEl.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
+            btnEl.style.transform = 'scale(1)';
         });
 
-        const submitName = () => {
-            const name = inputEl.value.trim().substring(0, 15);
-            if (!name) {
-                inputEl.style.borderColor = '#e74c3c';
-                inputEl.style.boxShadow = '0 0 25px rgba(231,76,60,0.6)';
-                errorEl.textContent = '¡Necesitamos tu nombre para participar!';
-                errorEl.style.opacity = '1';
-                inputEl.focus();
-                return;
+        const showError = (msg, elToFocus) => {
+            if (elToFocus) {
+                elToFocus.style.borderColor = '#e74c3c';
+                elToFocus.style.boxShadow = '0 0 25px rgba(231,76,60,0.6)';
+                elToFocus.focus();
             }
+            errorEl.textContent = msg;
+            errorEl.style.opacity = '1';
+        };
+
+        const clearError = (el) => {
+            el.style.borderColor = '#2ecc71';
+            el.style.boxShadow = '0 0 15px rgba(46,204,113,0.3)';
+            errorEl.style.opacity = '0';
+        };
+
+        [nameInput, emailInput, phoneInput].forEach(inp => {
+            inp.addEventListener('input', () => clearError(inp));
+        });
+
+        const submitName = async () => {
+            const name = nameInput.value.trim().substring(0, 15);
+            const email = emailInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const year = yearInput.value.trim();
+
+            if (!name) return showError('¡Necesitamos tu nombre ninja!', nameInput);
+            if (!email) return showError('¡Ingresa tu email para jugar!', emailInput);
+            if (!phone) return showError('¡Falta tu teléfono!', phoneInput);
 
             localStorage.setItem('vaxninja_player', name);
+            
             try {
-                fetch(`${API_BASE}/api/participant`, {
+                btnEl.disabled = true;
+                btnEl.textContent = 'CARGANDO...';
+                await fetch(`${API_BASE}/api/participant`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: name })
-                }).catch(() => {});
-            } catch (e) {}
+                    body: JSON.stringify({ name, email, phone, year })
+                });
+            } catch (e) {
+                console.error("Error al registrar:", e);
+            }
 
             this.cleanupHTML();
             this.scene.restart();
         };
 
         btnEl.addEventListener('click', submitName);
-        inputEl.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') submitName();
-            inputEl.style.borderColor = '#2ecc71';
-            inputEl.style.boxShadow = '0 0 25px rgba(46,204,113,0.7)';
-            errorEl.style.opacity = '0';
+        
+        [nameInput, emailInput, phoneInput, yearInput].forEach(inp => {
+            inp.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') submitName();
+            });
         });
     }
 
