@@ -72,7 +72,7 @@ class GameOverScene extends Phaser.Scene {
         const isSurvey = localStorage.getItem('vaxninja_is_survey') === 'true';
         
         try {
-            const response = await fetch('http://localhost:9091/api/score', {
+            const response = await fetch('/api/score', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
@@ -104,7 +104,7 @@ class GameOverScene extends Phaser.Scene {
 
     async loadRanking() {
         try {
-            const response = await fetch('http://localhost:9091/api/ranking');
+            const response = await fetch('/api/ranking');
             if (!response.ok) throw new Error("Rank API fail");
             
             const contentType = response.headers.get("content-type");

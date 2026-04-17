@@ -692,7 +692,7 @@
 
             debounceTimer = setTimeout(async () => {
                 try {
-                    const res = await fetch(`http://localhost:9091/api/clients/search?q=${encodeURIComponent(q)}`);
+                    const res = await fetch(`/api/clients/search?q=${encodeURIComponent(q)}`);
                     const json = await res.json();
 
                     if (json.data && json.data.length > 0) {
@@ -769,7 +769,7 @@
             };
 
             try {
-                const response = await fetch('http://localhost:9091/api/survey', {
+                const response = await fetch('/api/survey', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(finalData)

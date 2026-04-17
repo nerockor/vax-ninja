@@ -257,7 +257,7 @@
         <div id="tab-encuestas" class="tab-content">
             <div class="controls" style="margin-top: 10px;">
                 <h3 style="margin:0;">Estadísticas de Encuestas</h3>
-                <a href="http://localhost:9091/api/admin/survey/export" class="btn" style="text-decoration:none;">📊 Descargar CSV</a>
+                <a href="/api/admin/survey/export" class="btn" style="text-decoration:none;">📊 Descargar CSV</a>
             </div>
             <div id="status-encuestas" class="loading">Cargando datos de encuestas...</div>
             
@@ -296,7 +296,7 @@
             tableEl.style.display = 'none';
 
             try {
-                const response = await fetch('http://localhost:9091/api/admin/data');
+                const response = await fetch('/api/admin/data');
                 if (!response.ok) throw new Error('Network response was not ok');
                 
                 const contentType = response.headers.get("content-type");
@@ -343,7 +343,7 @@
             statsContainer.style.display = 'none';
 
             try {
-                const response = await fetch('http://localhost:9091/api/admin/survey/stats');
+                const response = await fetch('/api/admin/survey/stats');
                 if (!response.ok) throw new Error('Network response was not ok');
                 const json = await response.json();
                 const stats = json.data;

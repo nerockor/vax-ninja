@@ -3,7 +3,7 @@
    bg-login.png with parallax, sparkles & Fruit Ninja lights.
    ============================================================ */
 
-const API_BASE = 'http://localhost:9091';
+const API_BASE = '';
 
 class MenuScene extends Phaser.Scene {
     constructor() {

@@ -122,6 +122,43 @@ class GameScene extends Phaser.Scene {
         });
 
         this.cameras.main.fadeIn(300, 0, 0, 0);
+        this.createBossAnimations();
+    }
+
+    createBossAnimations() {
+        const stages = ['full', '95', '70', '30', '10', '0'];
+        const prefixMap = {
+            'full': 'jefe-final-idle',
+            '95': 'jefe-final-95-vida-idle',
+            '70': 'jefe-final-70vida-idle',
+            '30': 'jefe-final-30vida-idle',
+            '10': 'jefe-final-10vida-idle',
+            '0': 'jefe-final-0vida-idle'
+        };
+
+        stages.forEach(s => {
+            const prefix = prefixMap[s];
+            const frames = [];
+            
+            // Try to load 3 frames, but fallback to frame 1 if others missing
+            for (let i = 1; i <= 3; i++) {
+                const key = `${prefix}${i}`;
+                if (this.textures.exists(key)) {
+                    frames.push({ key });
+                } else if (frames.length > 0) {
+                    frames.push(frames[0]); // Duplicate frame 1 if 2 or 3 are missing
+                }
+            }
+
+            if (frames.length > 0) {
+                this.anims.create({
+                    key: `boss_idle_${s}`,
+                    frames: frames,
+                    frameRate: 6,
+                    repeat: -1
+                });
+            }
+        });
     }
 
     createUI() {
@@ -243,6 +280,23 @@ class GameScene extends Phaser.Scene {
         if (health <= 25) color = 0xe74c3c;
         this.healthBar.fillStyle(color, 1);
         this.healthBar.fillRoundedRect(width - 446, 58, (health / 100) * 392, 19, 6);
+    }
+
+    updateBossHealthBar(health) {
+        if (!this.bossHealthBar) return;
+        this.bossHealthBar.clear();
+        
+        const barWidth = 800;
+        const barHeight = 40;
+        const x = this.cameras.main.width / 2 - barWidth / 2 + 4;
+        const y = 154;
+        
+        let color = 0xe74c3c; // Red
+        if (health > 70) color = 0x2ecc71; // Green
+        else if (health > 30) color = 0xf39c12; // Orange
+        
+        this.bossHealthBar.fillStyle(color, 1);
+        this.bossHealthBar.fillRoundedRect(x, y, (health / 100) * (barWidth - 8), barHeight - 8, 8);
     }
 
     checkSlashCollision(x, y) {
@@ -419,9 +473,28 @@ class GameScene extends Phaser.Scene {
             this.bossContainer = this.add.container(width / 2, height / 2).setDepth(40);
 
             // Spawn Boss Sprite inside container
-            this.bossSprite = this.add.sprite(0, 0, 'jefe-final');
-            this.bossSprite.setScale(0.1); // Small at first
+            this.bossSprite = this.add.sprite(0, 0, 'jefe-final-idle1');
+            this.bossSprite.setScale(0.1); 
             this.bossContainer.add(this.bossSprite);
+
+            // ── 3. BOSS HEALTH BAR ──
+            const barWidth = 800;
+            const barHeight = 40;
+            const barX = width / 2 - barWidth / 2;
+            const barY = 150;
+
+            const bHbBg = this.add.graphics().setDepth(300);
+            bHbBg.fillStyle(0x333333, 0.8);
+            bHbBg.fillRoundedRect(barX, barY, barWidth, barHeight, 10);
+            bHbBg.lineStyle(4, 0xbdc3c7, 1);
+            bHbBg.strokeRoundedRect(barX, barY, barWidth, barHeight, 10);
+
+            this.bossHealthBar = this.add.graphics().setDepth(301);
+            this.updateBossHealthBar(100);
+
+            this.bossHealthLabel = this.add.text(width / 2, barY - 25, 'EL JEFE FINAL - SALUD: 100%', {
+                fontFamily: 'Outfit', fontSize: '24px', fontStyle: '900', color: '#e74c3c'
+            }).setOrigin(0.5).setDepth(302);
 
             // Dramatic Entrance
             this.tweens.add({
@@ -429,7 +502,10 @@ class GameScene extends Phaser.Scene {
                 scale: 1,
                 duration: 1000,
                 ease: 'Elastic.easeOut',
-                onComplete: () => this.setupBossInteraction()
+                onComplete: () => {
+                   this.bossSprite.play('boss_idle_full');
+                   this.setupBossInteraction();
+                }
             });
 
             // Boss idle float (inside parallax container)
@@ -609,14 +685,26 @@ hitBoss(weaponSprite) {
         emitting: false
     }).explode();
 
-    // Change Boss Image Texture based on actual filenames on disk
-    const damageStates = [
-        'jefe-final', 'jefe-final-95-vida', 'jefe-final-70vida', 
-        'jefe-final-30vida', 'jefe-final-10vida', 'jefe-final-0vida'
+    // Damage logic based on health percentages
+    const damageStages = [
+        { threshold: 100, anim: 'boss_idle_full', healthPct: 100 },
+        { threshold: 95, anim: 'boss_idle_95', healthPct: 95 },
+        { threshold: 70, anim: 'boss_idle_70', healthPct: 70 },
+        { threshold: 30, anim: 'boss_idle_30', healthPct: 30 },
+        { threshold: 10, anim: 'boss_idle_10', healthPct: 10 },
+        { threshold: 0, anim: null, healthPct: 0 }
     ];
 
-    if (this.bossHits < 6) {
-        this.bossSprite.setTexture(damageStates[this.bossHits]);
+    const currentState = damageStages[this.bossHits];
+    if (currentState && currentState.anim) {
+        this.bossSprite.play(currentState.anim, true);
+    } else if (this.bossHits === 5) {
+        this.bossSprite.play('boss_idle_0', true);
+    }
+
+    this.updateBossHealthBar(currentState ? currentState.healthPct : 0);
+    if (this.bossHealthLabel && currentState) {
+        this.bossHealthLabel.setText(`EL JEFE FINAL - SALUD: ${currentState.healthPct}%`);
     }
 
     // Check Victory

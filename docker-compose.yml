@@ -4,7 +4,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "8080:80"
+      - "9090:80"
     depends_on:
       - backend
     restart: unless-stopped
@@ -12,7 +12,7 @@ services:
   backend:
     build: ./backend
     ports:
-      - "8000:8000"
+      - "9091:8000"
     volumes:
       - vaxninja-data:/data
     environment:
