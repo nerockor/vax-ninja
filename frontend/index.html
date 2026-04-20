@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,39 +9,44 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/launcher.css">
 </head>
+
 <body>
     <div class="bg-container" id="parallax-bg"></div>
 
     <main>
         <div class="header-logo-container" style="text-align: center; margin-bottom: 30px;">
-            <img src="assets/sprites/logo-nuevo.png" alt="Sponsor Logo" style="max-height: 120px; filter: drop-shadow(0 0 10px rgba(46, 204, 113, 0.4));">
-            <h2 style="font-size: 1.8rem; font-weight: 800; color: #fff; margin-top: 15px; letter-spacing: 2px; text-transform: uppercase;">
+            <img src="assets/sprites/logo-nuevo.png" alt="Sponsor Logo"
+                style="max-height: 120px; filter: drop-shadow(0 0 10px rgba(46, 204, 113, 0.4));">
+            <h2
+                style="font-size: 1.8rem; font-weight: 800; color: #fff; margin-top: 15px; letter-spacing: 2px; text-transform: uppercase;">
                 Único canal de venta el veterinario
             </h2>
         </div>
-        
+
         <h1 style="margin-top: 10px;">VET CHALLENGE</h1>
-        
+
         <div class="button-container">
             <!-- Ya soy cliente -->
             <a href="survey.html" class="didactic-btn btn-client">
-                <div class="icon">🐶</div>
+                <div class="icon">🧑🏻‍⚕️</div>
                 <div class="btn-title">Ya soy cliente</div>
-                <p class="btn-desc">Gestiona tus turnos, historial médico y vacunas de tus mascotas de forma rápida.</p>
+                <p class="btn-desc">Tu opinión ayuda a mejorar nuestra atención, ¡Queremos escucharte!.</p>
             </a>
 
             <!-- Quero ser cliente -->
             <a href="register.html" class="didactic-btn btn-new">
                 <div class="icon">✨</div>
                 <div class="btn-title">Quero ser cliente</div>
-                <p class="btn-desc">Regístrate en nuestra red y accede a los mejores beneficios para tus compañeros.</p>
+                <p class="btn-desc">Regístrate en nuestra red y accede a los Precios más BAJOS DEL MERCADO y los mejores
+                    beneficios para tu clínica.</p>
             </a>
 
             <!-- Estudiante (El Juego) -->
-            <a href="game.html" class="didactic-btn btn-estudiante">
+            <a href="student.html" class="didactic-btn btn-estudiante">
                 <div class="icon">🥷</div>
                 <div class="btn-title">Estudiante</div>
-                <p class="btn-desc">¡Pone a prueba tus reflejos! Corta pulgas y garrapatas en el simulador Vax Ninja.</p>
+                <p class="btn-desc">¡Pone a prueba tus reflejos! ELIMINA "Pulgas y Garrapatas en el entrenamiento N.
+                </p>
             </a>
         </div>
     </main>
@@ -64,9 +70,9 @@
             sparkle.style.left = Math.random() * 100 + 'vw';
             sparkle.style.top = Math.random() * 100 + 'vh';
             sparkle.style.opacity = Math.random();
-            
+
             document.body.appendChild(sparkle);
-            
+
             setTimeout(() => {
                 sparkle.remove();
             }, 3000);
@@ -75,4 +81,5 @@
         setInterval(createSparkle, 200);
     </script>
 </body>
+
 </html>

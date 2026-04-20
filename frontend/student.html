@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vax Ninja — Registro Estudiante</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --secondary: #27ae60;
+            --accent: #f1c40f;
+            --dark: #1a1a2e;
+            --dark2: #16213e;
+            --glass: rgba(255, 255, 255, 0.07);
+            --border: rgba(255, 255, 255, 0.12);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+
+        body {
+            background: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background */
+        .bg {
+            position: fixed; inset: 0;
+            background: url('assets/sprites/bg-login.png') no-repeat center center / cover;
+            opacity: 0.18;
+            filter: blur(10px);
+            z-index: 0;
+        }
+
+        /* Floating particles */
+        .particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+        /* Glow beams */
+        .beam {
+            position: absolute;
+            width: 2px;
+            background: linear-gradient(to bottom, transparent, rgba(46, 204, 113, 0.4), transparent);
+            animation: beamFall linear infinite;
+        }
+        @keyframes beamFall {
+            from { transform: translateY(-100vh); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            to { transform: translateY(100vh); opacity: 0; }
+        }
+
+        /* Card */
+        .card {
+            position: relative; z-index: 2;
+            background: var(--glass);
+            backdrop-filter: blur(24px);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            padding: 48px 52px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.55), 0 0 60px rgba(46,204,113,0.06);
+            animation: slideUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Header */
+        .header { text-align: center; margin-bottom: 36px; }
+        .header .emoji { font-size: 64px; display: block; margin-bottom: 10px; animation: wobble 3s ease-in-out infinite; }
+        @keyframes wobble {
+            0%, 100% { transform: rotate(-3deg) scale(1); }
+            50%       { transform: rotate(3deg) scale(1.08); }
+        }
+        .header h1 {
+            font-size: 2.2rem; font-weight: 900; color: var(--primary);
+            text-shadow: 0 0 20px rgba(46,204,113,0.4);
+            letter-spacing: -1px; margin-bottom: 6px;
+        }
+        .header p { font-size: 1rem; color: #95a5a6; font-weight: 600; }
+
+        /* Divider */
+        .divider { height: 1px; background: var(--border); margin: 0 0 28px; }
+
+        /* Form */
+        .form-group { margin-bottom: 16px; }
+        label {
+            display: block; font-size: 0.82rem; font-weight: 700;
+            color: #95a5a6; text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 7px;
+        }
+        label span.req { color: var(--primary); }
+
+        input {
+            width: 100%; padding: 13px 18px;
+            background: rgba(255,255,255,0.06);
+            border: 2px solid rgba(255,255,255,0.12);
+            border-radius: 14px; outline: none;
+            color: #fff; font-family: 'Outfit', sans-serif;
+            font-size: 1rem; font-weight: 600;
+            transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+        }
+        input::placeholder { color: #5d6d7e; font-weight: 400; }
+        input:focus {
+            border-color: var(--primary);
+            background: rgba(46,204,113,0.07);
+            box-shadow: 0 0 0 4px rgba(46,204,113,0.15);
+        }
+        input.error {
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 4px rgba(231,76,60,0.15);
+        }
+
+        /* Error message */
+        .error-msg {
+            font-size: 0.85rem; font-weight: 700; color: #e74c3c;
+            min-height: 20px; margin-top: -8px; margin-bottom: 8px;
+            padding-left: 4px;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .error-msg.visible { opacity: 1; }
+
+        /* Submit button */
+        .btn-play {
+            margin-top: 24px;
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none; border-radius: 16px;
+            color: #fff; font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem; font-weight: 900;
+            letter-spacing: 2px; cursor: pointer;
+            box-shadow: 0 6px 24px rgba(46,204,113,0.35);
+            transition: all 0.25s ease;
+            position: relative; overflow: hidden;
+        }
+        .btn-play::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+            opacity: 0; transition: opacity 0.25s;
+        }
+        .btn-play:hover::after { opacity: 1; }
+        .btn-play:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(46,204,113,0.5);
+        }
+        .btn-play:active { transform: translateY(0); box-shadow: 0 4px 15px rgba(46,204,113,0.3); }
+        .btn-play:disabled {
+            opacity: 0.6; cursor: not-allowed;
+            transform: none; box-shadow: none;
+        }
+
+        /* Footer link */
+        .back-link {
+            display: block; text-align: center; margin-top: 22px;
+            font-size: 0.9rem; color: #5d6d7e; font-weight: 600;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: #ecf0f1; }
+
+        /* Optional badge */
+        .optional {
+            font-size: 0.72rem; color: #5d6d7e;
+            font-weight: 600; margin-left: 4px;
+            text-transform: none; letter-spacing: 0;
+        }
+
+        /* Success overlay */
+        .success-overlay {
+            display: none;
+            position: fixed; inset: 0; z-index: 100;
+            background: var(--dark);
+            flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .success-overlay.show { display: flex; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .success-overlay .countdown-num {
+            font-size: 12rem; font-weight: 900; color: var(--primary);
+            text-shadow: 0 0 60px rgba(46,204,113,0.6);
+            line-height: 1;
+            animation: pulse 0.9s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50%       { transform: scale(1.08); }
+        }
+        .success-overlay .ready-text {
+            font-size: 1.8rem; font-weight: 800; color: #fff;
+            margin-top: 24px; letter-spacing: 4px;
+            text-transform: uppercase; opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg"></div>
+    <div class="particles" id="particles"></div>
+
+    <div class="card">
+        <div class="header">
+            <span class="emoji">🥷</span>
+            <h1>¡Registrá tus datos!</h1>
+            <p>Completá el formulario para entrar al juego</p>
+        </div>
+        <div class="divider"></div>
+
+        <form id="student-form" novalidate>
+            <div class="form-group">
+                <label for="s-name">Nombre <span class="req">*</span></label>
+                <input type="text" id="s-name" placeholder="Tu nombre ninja..." autocomplete="given-name">
+            </div>
+            <div class="error-msg" id="err-name"></div>
+
+            <div class="form-group">
+                <label for="s-email">Email <span class="req">*</span></label>
+                <input type="email" id="s-email" placeholder="tu@email.com" autocomplete="email">
+            </div>
+            <div class="error-msg" id="err-email"></div>
+
+            <div class="form-group">
+                <label for="s-phone">Teléfono <span class="req">*</span></label>
+                <input type="tel" id="s-phone" placeholder="Ej: 11 2345 6789" autocomplete="tel">
+            </div>
+            <div class="error-msg" id="err-phone"></div>
+
+            <div class="form-group">
+                <label for="s-year">Año cursando <span class="optional">(opcional)</span></label>
+                <input type="text" id="s-year" placeholder="Ej: 3° año">
+            </div>
+
+            <button type="submit" class="btn-play" id="play-btn">
+                ¡JUGAR AHORA! ✂️
+            </button>
+        </form>
+
+        <a href="index.html" class="back-link">← Volver al inicio</a>
+    </div>
+
+    <!-- Countdown overlay before redirecting to game -->
+    <div class="success-overlay" id="success-overlay">
+        <div class="countdown-num" id="countdown-num">3</div>
+        <div class="ready-text">¡Prepárate!</div>
+    </div>
+
+    <script>
+        // ── Animated background beams ──
+        const particlesEl = document.getElementById('particles');
+        for (let i = 0; i < 8; i++) {
+            const beam = document.createElement('div');
+            beam.className = 'beam';
+            beam.style.left = `${Math.random() * 100}vw`;
+            beam.style.height = `${150 + Math.random() * 250}px`;
+            beam.style.animationDuration = `${3 + Math.random() * 5}s`;
+            beam.style.animationDelay = `${Math.random() * 5}s`;
+            beam.style.opacity = Math.random() * 0.6 + 0.2;
+            particlesEl.appendChild(beam);
+        }
+
+        // ── Form logic ──
+        const form     = document.getElementById('student-form');
+        const playBtn  = document.getElementById('play-btn');
+        const overlay  = document.getElementById('success-overlay');
+        const countNum = document.getElementById('countdown-num');
+
+        const fields = {
+            name:  { input: document.getElementById('s-name'),  error: document.getElementById('err-name'),  msg: '¡Tu nombre ninja es obligatorio!' },
+            email: { input: document.getElementById('s-email'), error: document.getElementById('err-email'), msg: '¡Ingresá un email válido!' },
+            phone: { input: document.getElementById('s-phone'), error: document.getElementById('err-phone'), msg: '¡El teléfono es obligatorio!' },
+        };
+
+        function showError(field, msg) {
+            field.input.classList.add('error');
+            field.error.textContent = msg || field.msg;
+            field.error.classList.add('visible');
+            field.input.focus();
+        }
+
+        function clearError(field) {
+            field.input.classList.remove('error');
+            field.error.classList.remove('visible');
+        }
+
+        Object.values(fields).forEach(f => {
+            f.input.addEventListener('input', () => clearError(f));
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name  = fields.name.input.value.trim();
+            const email = fields.email.input.value.trim();
+            const phone = fields.phone.input.value.trim();
+            const year  = document.getElementById('s-year').value.trim();
+
+            // Validations
+            if (!name)  return showError(fields.name);
+            if (!email || !email.includes('@')) return showError(fields.email);
+            if (!phone) return showError(fields.phone);
+
+            playBtn.disabled = true;
+            playBtn.textContent = 'REGISTRANDO...';
+
+            // Save to localStorage so game.html can use it
+            localStorage.setItem('vaxninja_player', name.substring(0, 15));
+
+            // Send to API (non-blocking — continue even if it fails)
+            try {
+                await fetch('/api/participant', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, phone, year })
+                });
+            } catch (err) {
+                console.warn('API error (continuing anyway):', err);
+            }
+
+            // Show countdown then redirect to game
+            overlay.classList.add('show');
+            let count = 3;
+            countNum.textContent = count;
+
+            const interval = setInterval(() => {
+                count--;
+                if (count <= 0) {
+                    clearInterval(interval);
+                    countNum.textContent = '¡YA!';
+                    countNum.style.color = '#f1c40f';
+                    setTimeout(() => {
+                        window.location.href = 'game.html';
+                    }, 600);
+                } else {
+                    countNum.textContent = count;
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

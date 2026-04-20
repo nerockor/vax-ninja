@@ -70,13 +70,13 @@ class GameOverScene extends Phaser.Scene {
     async autoSaveScore() {
         const playerName = localStorage.getItem('vaxninja_player') || 'JugadorAnonimo';
         const isSurvey = localStorage.getItem('vaxninja_is_survey') === 'true';
-        
+
         try {
             const response = await fetch('./api/score', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    name: playerName, 
+                body: JSON.stringify({
+                    name: playerName,
                     score: this.stats.score,
                     is_survey: isSurvey
                 }),
@@ -92,7 +92,7 @@ class GameOverScene extends Phaser.Scene {
         } catch (err) {
             console.error("Save error:", err);
             this.saveStatusText.setText(`❌ Error al conectar con el servidor (Usando info local)`).setColor('#e74c3c');
-            
+
             // Local fallback
             const saved = JSON.parse(localStorage.getItem('vaxninja_scores') || '[]');
             saved.push({ name: playerName, score: this.stats.score, date: new Date().toISOString().split('T')[0] });
@@ -106,7 +106,7 @@ class GameOverScene extends Phaser.Scene {
         try {
             const response = await fetch('/api/ranking');
             if (!response.ok) throw new Error("Rank API fail");
-            
+
             const contentType = response.headers.get("content-type");
             if (contentType && contentType.indexOf("application/json") !== -1) {
                 this.displayRanking(await response.json());
@@ -120,7 +120,7 @@ class GameOverScene extends Phaser.Scene {
 
     showLocalRanking() {
         const saved = JSON.parse(localStorage.getItem('vaxninja_scores') || '[]');
-        this.displayRanking(saved.slice(0, 10)); 
+        this.displayRanking(saved.slice(0, 10));
     }
 
     displayRanking(entries) {
@@ -131,16 +131,16 @@ class GameOverScene extends Phaser.Scene {
         entries.slice(0, 10).forEach((entry, i) => {
             const y = i * 60;
             const text = this.add.text(-250, y,
-                `${medals[i] || '  '} ${entry.name.substring(0,15)}`, {
-                    fontFamily: 'Outfit', fontSize: '36px',
-                    color: i === 0 ? '#f1c40f' : '#ecf0f1',
-                }).setOrigin(0, 0.5);
-            
+                `${medals[i] || '  '} ${entry.name.substring(0, 15)}`, {
+                fontFamily: 'Outfit', fontSize: '36px',
+                color: i === 0 ? '#f1c40f' : '#ecf0f1',
+            }).setOrigin(0, 0.5);
+
             const scoreTxt = this.add.text(250, y,
                 `${entry.score}`, {
-                    fontFamily: 'Outfit', fontSize: '36px', fontStyle: '800',
-                    color: i === 0 ? '#f1c40f' : '#2ecc71',
-                }).setOrigin(1, 0.5);
+                fontFamily: 'Outfit', fontSize: '36px', fontStyle: '800',
+                color: i === 0 ? '#f1c40f' : '#2ecc71',
+            }).setOrigin(1, 0.5);
 
             this.rankingContainer.add(text);
             this.rankingContainer.add(scoreTxt);

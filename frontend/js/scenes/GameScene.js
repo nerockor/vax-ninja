@@ -44,6 +44,18 @@ class GameScene extends Phaser.Scene {
         this.slashPoints = [];
         this.isSlashing = false;
 
+        // ── Sword cursor sprite (follows pointer while pressing) ──
+        this.swordCursor = this.add.image(-200, -200, 'espada')
+            .setDisplaySize(150, 76)
+            .setDepth(500)
+            .setAlpha(0)
+            .setOrigin(0.15, 0.5); // Hot-spot near the tip
+
+        // Hide canvas CSS cursor while slashing
+        this._canvas = this.sys.game.canvas;
+        this._prevX = 0;
+        this._prevY = 0;
+
         // ── UI ──
         this.createUI();
 
@@ -51,8 +63,14 @@ class GameScene extends Phaser.Scene {
         this.input.on('pointerdown', (pointer) => {
             if (this.gameOver) return;
             this.isSlashing = true;
+            this._prevX = pointer.x;
+            this._prevY = pointer.y;
             this.slashPoints = [{ x: pointer.x, y: pointer.y, time: Date.now() }];
             this.checkSlashCollision(pointer.x, pointer.y);
+
+            // Show sword cursor
+            this.swordCursor.setPosition(pointer.x, pointer.y).setAlpha(0.92);
+            this._canvas.style.cursor = 'none';
         });
 
         this.input.on('pointermove', (pointer) => {
@@ -60,11 +78,25 @@ class GameScene extends Phaser.Scene {
             this.slashPoints.push({ x: pointer.x, y: pointer.y, time: Date.now() });
             if (this.slashPoints.length > 15) this.slashPoints.shift();
             this.checkSlashCollision(pointer.x, pointer.y);
+
+            // Move & rotate sword toward movement direction
+            const dx = pointer.x - this._prevX;
+            const dy = pointer.y - this._prevY;
+            if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                this.swordCursor.setRotation(Math.atan2(dy, dx));
+            }
+            this.swordCursor.setPosition(pointer.x, pointer.y);
+            this._prevX = pointer.x;
+            this._prevY = pointer.y;
         });
 
         this.input.on('pointerup', () => {
             this.isSlashing = false;
             this.slashPoints = [];
+
+            // Hide sword cursor and restore default
+            this.swordCursor.setAlpha(0);
+            this._canvas.style.cursor = 'default';
         });
 
         // ── Events ──
@@ -377,6 +409,11 @@ class GameScene extends Phaser.Scene {
         this.spawnManager.stop();
         if (this.timerEvent) this.timerEvent.remove(false);
         this.physics.pause();
+
+        // Restore cursor
+        if (this.swordCursor) this.swordCursor.setAlpha(0);
+        if (this._canvas) this._canvas.style.cursor = 'default';
+
         this.cameras.main.fadeOut(500, 0, 0, 0);
 
         const stats = this.scoreManager.getStats();

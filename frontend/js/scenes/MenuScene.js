@@ -230,7 +230,7 @@ class MenuScene extends Phaser.Scene {
             input.id = id;
             input.placeholder = placeholder;
             input.style.cssText = inputStyle;
-            
+
             input.addEventListener('focus', () => {
                 input.style.boxShadow = '0 0 25px rgba(46,204,113,0.7)';
                 input.style.transform = 'scale(1.02)';
@@ -332,7 +332,7 @@ class MenuScene extends Phaser.Scene {
             if (!phone) return showError('¡Falta tu teléfono!', phoneInput);
 
             localStorage.setItem('vaxninja_player', name);
-            
+
             try {
                 btnEl.disabled = true;
                 btnEl.textContent = 'CARGANDO...';
@@ -350,7 +350,7 @@ class MenuScene extends Phaser.Scene {
         };
 
         btnEl.addEventListener('click', submitName);
-        
+
         [nameInput, emailInput, phoneInput, yearInput].forEach(inp => {
             inp.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') submitName();
