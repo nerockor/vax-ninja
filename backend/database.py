@@ -51,6 +51,8 @@ class Database:
             CREATE TABLE IF NOT EXISTS survey_responses (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 razon_social TEXT,
+                canal_pedidos TEXT,
+                razon_canal TEXT,
                 comunicacion TEXT,
                 funcionalidad TEXT,
                 funcionalidad_detalle TEXT,
@@ -65,6 +67,12 @@ class Database:
         except sqlite3.OperationalError: pass
             
         try: self.conn.execute("ALTER TABLE survey_responses ADD COLUMN razon_social TEXT")
+        except sqlite3.OperationalError: pass
+
+        try: self.conn.execute("ALTER TABLE survey_responses ADD COLUMN canal_pedidos TEXT")
+        except sqlite3.OperationalError: pass
+
+        try: self.conn.execute("ALTER TABLE survey_responses ADD COLUMN razon_canal TEXT")
         except sqlite3.OperationalError: pass
 
         try: self.conn.execute("ALTER TABLE scores ADD COLUMN is_survey INTEGER DEFAULT 0")
@@ -176,15 +184,17 @@ class Database:
     def insert_survey(self, data: dict):
         self.conn.execute(
             """INSERT INTO survey_responses 
-               (razon_social, comunicacion, funcionalidad, funcionalidad_detalle, obsequios, pedidos, satisfaccion) 
-               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+               (razon_social, canal_pedidos, razon_canal, comunicacion, funcionalidad, funcionalidad_detalle, obsequios, pedidos, satisfaccion) 
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 data.get("razon_social", "Desconocido"),
+                data.get("canal_pedidos"),
+                data.get("razon_canal"),
                 data.get("comunicacion"),
                 data.get("funcionalidad"),
                 data.get("funcionalidad_detalle"),
                 data.get("obsequios"),
-                data.get("pedidos"),
+                data.get("pedidos", ""),
                 data.get("satisfaccion", 0)
             )
         )
@@ -236,6 +246,8 @@ class Database:
         
         stats = {
             "total_responses": len(rows),
+            "canal_pedidos": {},
+            "razon_canal": {},
             "comunicacion": {},
             "funcionalidad_general": {},
             "funcionalidad_detalle_gusta": {},
@@ -252,6 +264,8 @@ class Database:
         
         for r in rows:
             # Simple aggregations
+            self._count_csv(r["canal_pedidos"], stats["canal_pedidos"])
+            self._count_csv(r["razon_canal"], stats["razon_canal"])
             self._count_csv(r["comunicacion"], stats["comunicacion"])
             self._count_csv(r["funcionalidad"], stats["funcionalidad_general"])
             self._count_csv(r["obsequios"], stats["obsequios"])
