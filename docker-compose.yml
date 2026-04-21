@@ -17,6 +17,7 @@ services:
     ports:
       - "9091:8000"
     volumes:
+      - ./backend:/app
       - vaxninja-data:/data
     environment:
       - DB_PATH=/data/vaxninja.db

@@ -69,12 +69,14 @@ class ProspectInput(BaseModel):
 
 class SurveyInput(BaseModel):
     razon_social: str = ""
+    canal_pedidos: str = ""
+    razon_canal: str = ""
     comunicacion: str
     funcionalidad: str
     funcionalidad_detalle: str = ""
     obsequios: str
-    pedidos: str
-    satisfaccion: int
+    pedidos: str = ""
+    satisfaccion: int = 0
 
 
 @app.post("/api/score")
@@ -176,8 +178,8 @@ async def export_survey_csv():
     
     # Header
     writer.writerow([
-        "Fecha", "Razón Social", "Comunicación", "Funcionalidad", 
-        "Canales Aprobados (Gustan)", "Canales Rechazados (No quieren)", "Obsequios", "Pedidos", "Satisfacción"
+        "Fecha", "Razón Social", "Canal de Pedido", "Razón del Canal", "Comunicación", "Funcionalidad", 
+        "Canales Aprobados (Gustan)", "Canales Rechazados (No quieren)", "Obsequios", "Pedidos (Legacy)", "Satisfacción"
     ])
     
     for r in responses:
@@ -195,13 +197,15 @@ async def export_survey_csv():
         writer.writerow([
             r["created_at"],
             r.get("razon_social", ""),
+            r.get("canal_pedidos", ""),
+            r.get("razon_canal", ""),
             r["comunicacion"],
             r["funcionalidad"],
             gusta,
             rechaza,
             r["obsequios"],
-            r["pedidos"],
-            r["satisfaccion"]
+            r.get("pedidos", ""),
+            r.get("satisfaccion", 0)
         ])
     
     output.seek(0)
