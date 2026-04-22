@@ -82,11 +82,21 @@ class SpawnManager {
     }
 
     increaseDifficulty() {
-        this.currentInterval = Math.max(this.minInterval, this.currentInterval - 20);
-        this.multiSpawnChance = Math.min(0.6, this.multiSpawnChance + this.difficultyRamp);
+        // Difficulty doubles every 10 seconds based on elapsed time (Total 35s)
+        const initialTime = 35;
+        const elapsedTime = Math.max(0, initialTime - this.scene.timeRemaining);
+        const phase = Math.floor(elapsedTime / 10); // 0, 1, 2, 3
+        const multiplier = Math.pow(2, phase);
 
-        if (this.spawnCount % 5 === 0) {
-            this.speedIncrease += 0.08;
-        }
+        // Exponential interval reduction
+        this.currentInterval = Math.max(this.minInterval, this.baseInterval / multiplier);
+        
+        // Scale multi-spawn chance: starts at 0.15, increases with phase
+        this.multiSpawnChance = Math.min(0.8, 0.15 + (phase * 0.2));
+
+        // Scale speed: base speed + phase bonus + slight spawn count bonus
+        this.speedIncrease = 1.0 + (phase * 0.4) + (this.spawnCount * 0.01);
+
+        console.log(`[SpawnManager] Phase: ${phase} | Multiplier: ${multiplier} | Interval: ${this.currentInterval.toFixed(0)}ms | Speed: ${this.speedIncrease.toFixed(2)}`);
     }
 }

@@ -220,6 +220,36 @@ async def get_admin_survey_stats():
     stats = db.get_survey_stats()
     return {"status": "ok", "data": stats}
 
+@app.get("/api/admin/ranking/export")
+async def export_ranking_csv():
+    report = db.get_admin_report()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Header
+    writer.writerow([
+        "Player ID (Alias)", "Nombre Real / Clínica", "IP Origen", 
+        "Fecha Primer Juego", "Mejor Puntaje", "Sesiones Jugadas"
+    ])
+    
+    for row in report:
+        writer.writerow([
+            row["player_id"],
+            row["real_name"],
+            row["ip_address"],
+            row["first_played_date"],
+            row["top_score"],
+            row["sessions_played"]
+        ])
+    
+    output.seek(0)
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=rankingVaxNinja.csv"}
+    )
+
 @app.get("/api/health")
 async def health():
     return {"status": "ok", "game": "Vax Ninja"}

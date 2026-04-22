@@ -31,7 +31,14 @@ class ScoreManager {
             this.scene.events.emit('combo-activated', this.combo);
         }
 
-        const points = this.SLICE_POINTS * this.comboMultiplier;
+        // Time-progressive scoring to prevent ties:
+        // Each enemy is worth the base points + 2 points per second of the game passed.
+        const initialTime = 35;
+        const elapsedTime = Math.max(0, initialTime - this.scene.timeRemaining);
+        const timeBonus = Math.floor(elapsedTime * 2); // e.g. at sec 30, bonus is 60 pts
+
+        const basePoints = this.SLICE_POINTS + timeBonus;
+        const points = basePoints * this.comboMultiplier;
         this.score += points;
 
         if (this.combo > this.maxCombo) {

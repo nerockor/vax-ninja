@@ -247,7 +247,8 @@ class Database:
         stats = {
             "total_responses": len(rows),
             "canal_pedidos": {},
-            "razon_canal": {},
+            "razon_canal_web": {},
+            "razon_canal_rechazo": {},
             "comunicacion": {},
             "funcionalidad_general": {},
             "funcionalidad_detalle_gusta": {},
@@ -263,16 +264,25 @@ class Database:
         total_satisfaccion = 0
         
         for r in rows:
+            row_dict = dict(r)
+            
             # Simple aggregations
-            self._count_csv(r["canal_pedidos"], stats["canal_pedidos"])
-            self._count_csv(r["razon_canal"], stats["razon_canal"])
-            self._count_csv(r["comunicacion"], stats["comunicacion"])
-            self._count_csv(r["funcionalidad"], stats["funcionalidad_general"])
-            self._count_csv(r["obsequios"], stats["obsequios"])
-            self._count_csv(r["pedidos"], stats["pedidos"])
+            self._count_csv(row_dict.get("canal_pedidos", ""), stats["canal_pedidos"])
+            
+            # Split razon_canal based on the canal_pedidos
+            canal = row_dict.get("canal_pedidos", "") or ""
+            if canal == "Web":
+                self._count_csv(row_dict.get("razon_canal", ""), stats["razon_canal_web"])
+            elif canal in ["Vendedor", "Telefono"]:
+                self._count_csv(row_dict.get("razon_canal", ""), stats["razon_canal_rechazo"])
+                
+            self._count_csv(row_dict.get("comunicacion", ""), stats["comunicacion"])
+            self._count_csv(row_dict.get("funcionalidad", ""), stats["funcionalidad_general"])
+            self._count_csv(row_dict.get("obsequios", ""), stats["obsequios"])
+            self._count_csv(row_dict.get("pedidos", ""), stats["pedidos"])
             
             # Complex functionality aggregation
-            detalle = r["funcionalidad_detalle"] or ""
+            detalle = row_dict.get("funcionalidad_detalle", "") or ""
             if "Gusta:" in detalle:
                 gusta_part = detalle.split("Gusta:")[1].split("|")[0].strip()
                 self._count_csv(gusta_part, stats["funcionalidad_detalle_gusta"])

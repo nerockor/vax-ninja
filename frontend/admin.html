@@ -231,7 +231,10 @@
                 <button class="tab-btn" onclick="switchTab('estudiantes')">🎓 Estudiantes</button>
                 <button class="tab-btn" onclick="switchTab('encuestas')">📝 Encuestas</button>
             </div>
-            <button class="btn" onclick="loadCurrentTab()">🔄 Actualizar</button>
+            <div style="display: flex; gap: 10px;">
+                <a id="export-btn" href="/api/admin/ranking/export" class="btn" style="text-decoration:none; display: none;">📊 Descargar CSV</a>
+                <button class="btn" onclick="loadCurrentTab()">🔄 Actualizar</button>
+            </div>
         </div>
 
         <!-- JUGADORES TAB -->
@@ -277,7 +280,6 @@
         <div id="tab-encuestas" class="tab-content">
             <div class="controls" style="margin-top: 10px;">
                 <h3 style="margin:0;">Estadísticas de Encuestas</h3>
-                <a href="/api/admin/survey/export" class="btn" style="text-decoration:none;">📊 Descargar CSV</a>
             </div>
             <div id="status-encuestas" class="loading">Cargando datos de encuestas...</div>
             
@@ -297,6 +299,18 @@
             
             event.target.classList.add('active');
             document.getElementById(`tab-${tab}`).classList.add('active');
+            
+            const exportBtn = document.getElementById('export-btn');
+            if (tab === 'jugadores') {
+                exportBtn.href = '/api/admin/ranking/export';
+                exportBtn.style.display = 'block';
+            } else if (tab === 'encuestas') {
+                exportBtn.href = '/api/admin/survey/export';
+                exportBtn.style.display = 'block';
+            } else {
+                exportBtn.style.display = 'none';
+            }
+
             currentTab = tab;
             loadCurrentTab();
         }
@@ -421,6 +435,9 @@
 
                 // Helper to render bars
                 const renderBars = (dataObj, total, isNegative = false) => {
+                    if (Object.keys(dataObj).length === 0) {
+                        return '<p style="color: var(--text-dim); font-size: 14px; font-style: italic;">Sin respuestas aún</p>';
+                    }
                     return Object.entries(dataObj).sort((a,b) => b[1] - a[1]).map(([key, count]) => {
                         const pct = Math.round((count / total) * 100) || 0;
                         return `
@@ -431,49 +448,88 @@
                     }).join('');
                 };
 
+                // Helper to get the top answer
+                const getWinner = (dataObj) => {
+                    const entries = Object.entries(dataObj);
+                    if (entries.length === 0) return null;
+                    return entries.reduce((max, current) => current[1] > max[1] ? current : max)[0];
+                };
+
                 statsContainer.innerHTML = `
                     <div class="stat-card">
-                        <h3>Resumen General</h3>
+                        <h3>📊 Resumen General</h3>
                         <div class="stat-row">
-                            <div class="stat-label">Total Respuestas</div>
+                            <div class="stat-label">👥 Total Respuestas</div>
                             <div class="hero-stat">${stats.total_responses}</div>
                         </div>
                         <div class="stat-row">
-                            <div class="stat-label">Satisfacción Promedio</div>
-                            <div class="hero-stat">${stats.satisfaccion_promedio} ⭐</div>
+                            <div class="stat-label">⭐ Satisfacción Promedio</div>
+                            <div class="hero-stat">${stats.satisfaccion_promedio} / 5</div>
                         </div>
                     </div>
                     
                     <div class="stat-card">
-                        <h3>1. Canales de Comunicación Actuales</h3>
+                        <h3>🚚 1. ¿Cuál es tu canal preferido para realizar tus pedidos?</h3>
+                        <div style="background: rgba(46, 204, 113, 0.1); border-left: 4px solid var(--primary); padding: 10px; margin-bottom: 20px; border-radius: 4px;">
+                            <span style="font-size: 14px; color: #ecf0f1;">💡 Tus clientes prefieren hacer sus pedidos por: <strong>${getWinner(stats.canal_pedidos) || 'N/A'}</strong></span>
+                        </div>
+                        ${renderBars(stats.canal_pedidos, stats.total_responses)}
+                    </div>
+
+                    <div class="stat-card" style="border-color: #2ecc71;">
+                        <h3 style="color: #2ecc71;">💎 1b. ¿Qué valoran de comprar online?</h3>
+                        <div style="background: rgba(46, 204, 113, 0.1); border-left: 4px solid var(--primary); padding: 10px; margin-bottom: 20px; border-radius: 4px;">
+                            <span style="font-size: 14px; color: #ecf0f1;">💡 Lo que más destacan de tu web es: <strong>${getWinner(stats.razon_canal_web) || 'N/A'}</strong></span>
+                        </div>
+                        ${renderBars(stats.razon_canal_web, stats.total_responses)}
+                    </div>
+
+                    <div class="stat-card" style="border-color: #e74c3c;">
+                        <h3 style="color: #e74c3c;">⚠️ 1c. Barreras de Adopción (Por qué NO usan la Web/App)</h3>
+                        <div style="background: rgba(231, 76, 60, 0.1); border-left: 4px solid #e74c3c; padding: 10px; margin-bottom: 20px; border-radius: 4px;">
+                            <span style="font-size: 14px; color: #ecf0f1;">⛔ El mayor obstáculo que impide a tus clientes usar la Web es: <strong>${getWinner(stats.razon_canal_rechazo) || 'N/A'}</strong></span>
+                        </div>
+                        ${renderBars(stats.razon_canal_rechazo, stats.total_responses, true)}
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3>📱 2. ¿Qué comunicación suelen recibir?</h3>
+                        <div style="background: rgba(46, 204, 113, 0.1); border-left: 4px solid var(--primary); padding: 10px; margin-bottom: 20px; border-radius: 4px;">
+                            <span style="font-size: 14px; color: #ecf0f1;">💡 La mayor parte de tu comunicación les llega por: <strong>${getWinner(stats.comunicacion) || 'N/A'}</strong></span>
+                        </div>
                         ${renderBars(stats.comunicacion, stats.total_responses)}
                     </div>
 
                     <div class="stat-card">
-                        <h3>2. Funcionalidad / Interés</h3>
+                        <h3>⚙️ 3. ¿Les parece funcional?</h3>
+                        <div style="background: rgba(46, 204, 113, 0.1); border-left: 4px solid var(--primary); padding: 10px; margin-bottom: 20px; border-radius: 4px;">
+                            <span style="font-size: 14px; color: #ecf0f1;">💡 En general, la mayoría opina que la comunicación es: <strong>${getWinner(stats.funcionalidad_general) || 'N/A'}</strong></span>
+                        </div>
                         ${renderBars(stats.funcionalidad_general, stats.total_responses)}
                     </div>
                     
                     <div class="stat-card">
-                        <h3>2a. Canales Aprobados (Sí)</h3>
-                        <p style="font-size: 12px; color: var(--text-dim); margin-bottom:10px;">Sub-selector de los que aceptaron.</p>
+                        <h3>✅ 3a. Canales Aprobados (Sí)</h3>
+                        <div style="background: rgba(46, 204, 113, 0.1); border-left: 4px solid var(--primary); padding: 10px; margin-bottom: 20px; border-radius: 4px;">
+                            <span style="font-size: 14px; color: #ecf0f1;">💡 El canal con mayor aceptación y agrado es: <strong>${getWinner(stats.funcionalidad_detalle_gusta) || 'N/A'}</strong></span>
+                        </div>
                         ${renderBars(stats.funcionalidad_detalle_gusta, stats.total_responses)}
                     </div>
                     
-                    <div class="stat-card" style="border-color: #e74c3c;">
-                        <h3 style="color: #e74c3c;">2b. Canales Rechazados (No)</h3>
-                        <p style="font-size: 12px; color: var(--text-dim); margin-bottom:10px;">Específicamente qué canales no quieren.</p>
-                        ${renderBars(stats.funcionalidad_detalle_rechaza, stats.total_responses, true)}
+                    <div class="stat-card" style="border-color: #f39c12;">
+                        <h3 style="color: #f39c12;">💡 3b. Áreas de Oportunidad y Mejora (Rechazos)</h3>
+                        <div style="background: rgba(243, 156, 18, 0.1); border-left: 4px solid #f39c12; padding: 10px; margin-bottom: 20px; border-radius: 4px;">
+                            <span style="font-size: 14px; color: #ecf0f1;">💡 El canal con mayor oportunidad para innovar, reinventar el formato y captar más atención es: <strong>${getWinner(stats.funcionalidad_detalle_rechaza) || 'N/A'}</strong></span>
+                        </div>
+                        ${renderBars(stats.funcionalidad_detalle_rechaza, stats.total_responses, false)}
                     </div>
                     
                     <div class="stat-card">
-                        <h3>3. Obsequios Deseados</h3>
+                        <h3>🎁 4. ¿Qué obsequios te gustaría ver?</h3>
+                        <div style="background: rgba(46, 204, 113, 0.1); border-left: 4px solid var(--primary); padding: 10px; margin-bottom: 20px; border-radius: 4px;">
+                            <span style="font-size: 14px; color: #ecf0f1;">🎁 El premio / incentivo más codiciado por la clínica es: <strong>${getWinner(stats.obsequios) || 'N/A'}</strong></span>
+                        </div>
                         ${renderBars(stats.obsequios, stats.total_responses)}
-                    </div>
-                    
-                    <div class="stat-card">
-                        <h3>4. Medio de Pedidos</h3>
-                        ${renderBars(stats.pedidos, stats.total_responses)}
                     </div>
                 `;
 
@@ -484,7 +540,17 @@
         }
 
         // Initial load
-        window.onload = loadCurrentTab;
+        window.onload = () => {
+            // Check if there is an active tab, or default to players
+            const activeTab = document.querySelector('.tab-btn.active');
+            if (activeTab) {
+                // Get the tab name from the onclick attribute or text
+                const tabMatch = activeTab.getAttribute('onclick').match(/'(.*)'/);
+                if (tabMatch) switchTab(tabMatch[1]);
+            } else {
+                switchTab('jugadores');
+            }
+        };
     </script>
 
 </body>
