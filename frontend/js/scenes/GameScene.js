@@ -230,8 +230,8 @@ class GameScene extends Phaser.Scene {
         this.weaponSprites = [];
 
         // Weapon config (Refined for compact layout)
-        const spacingY = 180;
-        const startY = height / 2 - spacingY; 
+        const spacingY = 330;
+        const startY = height / 2 - (spacingY); 
         const leftX = 120;
         const rightX = width - 120;
 
@@ -241,7 +241,7 @@ class GameScene extends Phaser.Scene {
             const y = startY + ((i % 3) * spacingY);
 
             const weapon = this.add.image(x, y, `arma-${i + 1}`).setDepth(151);
-            weapon.setDisplaySize(110, 110); // Initial inactive size
+            weapon.setDisplaySize(150, 200); // Updated inactive size
             weapon.setAlpha(0.3);
             weapon.setTint(0x555555);
             
@@ -267,8 +267,8 @@ class GameScene extends Phaser.Scene {
 
             weapon.setAlpha(1);
             weapon.clearTint();
-            weapon.setDisplaySize(370, 370); // Target active size requested by user
-            const targetScale = weapon.scaleX; // Capture the actual scale corresponding to 370px
+            weapon.setDisplaySize(296, 296); // Target active size reduced by 20%
+            const targetScale = weapon.scaleX; 
 
             this.tweens.add({
                 targets: weapon,
